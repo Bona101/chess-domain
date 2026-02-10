@@ -6,6 +6,9 @@ export const Route = createRootRoute({
   component: () => (
     <>
     <h1>Rejoice</h1>
+    <div className='bg'>
+      Chess Domain
+    </div>
       <Outlet /> {/* This is where your individual pages will swap in and out */}
       <TanStackRouterDevtools />
     </>
