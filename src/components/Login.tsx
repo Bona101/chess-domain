@@ -1,6 +1,9 @@
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 
+const env = import.meta.env;
+const LOGIN_URL = env.VITE_BACKEND_LOGIN_URL;
+
 export default function Login() {
     const router = useRouter();
     const [email, setEmail] = useState("");
@@ -9,7 +12,7 @@ export default function Login() {
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const res = await fetch("http://localhost:5000/login", {
+        const res = await fetch(LOGIN_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),
