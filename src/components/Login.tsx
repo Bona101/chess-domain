@@ -21,6 +21,7 @@ export default function Login() {
 
         if (res.ok) {
             alert("Logged in successfully!");
+            console.log("logged in")
             router.navigate({ to: "/dashboard" });
         } else {
             alert("Login failed");

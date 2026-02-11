@@ -22,6 +22,7 @@ export default function Signup() {
 
         if (res.ok) {
             alert("Signed up and logged in!");
+            console.log("signed up")
             router.navigate({ to: "/dashboard" })
         } else {
             const msg = await res.text();
