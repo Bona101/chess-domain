@@ -11,10 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AuthenticatedRoutesRouteRouteImport } from './routes/_authenticated-routes/route'
 import { Route as GamesIndexRouteImport } from './routes/games/index'
 import { Route as GamesPastplayedRouteImport } from './routes/games/pastplayed'
+import { Route as AuthenticatedRoutesPlayPersonRouteImport } from './routes/_authenticated-routes/play-person'
+import { Route as AuthenticatedRoutesPlayComputerRouteImport } from './routes/_authenticated-routes/play-computer'
+import { Route as AuthenticatedRoutesDashboardRouteImport } from './routes/_authenticated-routes/dashboard'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -26,16 +29,16 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRoutesRouteRoute =
+  AuthenticatedRoutesRouteRouteImport.update({
+    id: '/_authenticated-routes',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const GamesIndexRoute = GamesIndexRouteImport.update({
   id: '/games/',
   path: '/games/',
@@ -46,29 +49,54 @@ const GamesPastplayedRoute = GamesPastplayedRouteImport.update({
   path: '/games/pastplayed',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRoutesPlayPersonRoute =
+  AuthenticatedRoutesPlayPersonRouteImport.update({
+    id: '/play-person',
+    path: '/play-person',
+    getParentRoute: () => AuthenticatedRoutesRouteRoute,
+  } as any)
+const AuthenticatedRoutesPlayComputerRoute =
+  AuthenticatedRoutesPlayComputerRouteImport.update({
+    id: '/play-computer',
+    path: '/play-computer',
+    getParentRoute: () => AuthenticatedRoutesRouteRoute,
+  } as any)
+const AuthenticatedRoutesDashboardRoute =
+  AuthenticatedRoutesDashboardRouteImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
+    getParentRoute: () => AuthenticatedRoutesRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
-  '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/dashboard': typeof AuthenticatedRoutesDashboardRoute
+  '/play-computer': typeof AuthenticatedRoutesPlayComputerRoute
+  '/play-person': typeof AuthenticatedRoutesPlayPersonRoute
   '/games/pastplayed': typeof GamesPastplayedRoute
   '/games': typeof GamesIndexRoute
 }
 export interface FileRoutesByTo {
   '/about': typeof AboutRoute
-  '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/dashboard': typeof AuthenticatedRoutesDashboardRoute
+  '/play-computer': typeof AuthenticatedRoutesPlayComputerRoute
+  '/play-person': typeof AuthenticatedRoutesPlayPersonRoute
   '/games/pastplayed': typeof GamesPastplayedRoute
   '/games': typeof GamesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_authenticated-routes': typeof AuthenticatedRoutesRouteRouteWithChildren
   '/about': typeof AboutRoute
-  '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/_authenticated-routes/dashboard': typeof AuthenticatedRoutesDashboardRoute
+  '/_authenticated-routes/play-computer': typeof AuthenticatedRoutesPlayComputerRoute
+  '/_authenticated-routes/play-person': typeof AuthenticatedRoutesPlayPersonRoute
   '/games/pastplayed': typeof GamesPastplayedRoute
   '/games/': typeof GamesIndexRoute
 }
@@ -76,32 +104,39 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/about'
-    | '/dashboard'
     | '/login'
     | '/signup'
+    | '/dashboard'
+    | '/play-computer'
+    | '/play-person'
     | '/games/pastplayed'
     | '/games'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/about'
-    | '/dashboard'
     | '/login'
     | '/signup'
+    | '/dashboard'
+    | '/play-computer'
+    | '/play-person'
     | '/games/pastplayed'
     | '/games'
   id:
     | '__root__'
+    | '/_authenticated-routes'
     | '/about'
-    | '/dashboard'
     | '/login'
     | '/signup'
+    | '/_authenticated-routes/dashboard'
+    | '/_authenticated-routes/play-computer'
+    | '/_authenticated-routes/play-person'
     | '/games/pastplayed'
     | '/games/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  AuthenticatedRoutesRouteRoute: typeof AuthenticatedRoutesRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
-  DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   GamesPastplayedRoute: typeof GamesPastplayedRoute
@@ -124,18 +159,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/about': {
       id: '/about'
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated-routes': {
+      id: '/_authenticated-routes'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthenticatedRoutesRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/games/': {
@@ -152,12 +187,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GamesPastplayedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated-routes/play-person': {
+      id: '/_authenticated-routes/play-person'
+      path: '/play-person'
+      fullPath: '/play-person'
+      preLoaderRoute: typeof AuthenticatedRoutesPlayPersonRouteImport
+      parentRoute: typeof AuthenticatedRoutesRouteRoute
+    }
+    '/_authenticated-routes/play-computer': {
+      id: '/_authenticated-routes/play-computer'
+      path: '/play-computer'
+      fullPath: '/play-computer'
+      preLoaderRoute: typeof AuthenticatedRoutesPlayComputerRouteImport
+      parentRoute: typeof AuthenticatedRoutesRouteRoute
+    }
+    '/_authenticated-routes/dashboard': {
+      id: '/_authenticated-routes/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedRoutesDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoutesRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRoutesRouteRouteChildren {
+  AuthenticatedRoutesDashboardRoute: typeof AuthenticatedRoutesDashboardRoute
+  AuthenticatedRoutesPlayComputerRoute: typeof AuthenticatedRoutesPlayComputerRoute
+  AuthenticatedRoutesPlayPersonRoute: typeof AuthenticatedRoutesPlayPersonRoute
+}
+
+const AuthenticatedRoutesRouteRouteChildren: AuthenticatedRoutesRouteRouteChildren =
+  {
+    AuthenticatedRoutesDashboardRoute: AuthenticatedRoutesDashboardRoute,
+    AuthenticatedRoutesPlayComputerRoute: AuthenticatedRoutesPlayComputerRoute,
+    AuthenticatedRoutesPlayPersonRoute: AuthenticatedRoutesPlayPersonRoute,
+  }
+
+const AuthenticatedRoutesRouteRouteWithChildren =
+  AuthenticatedRoutesRouteRoute._addFileChildren(
+    AuthenticatedRoutesRouteRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
+  AuthenticatedRoutesRouteRoute: AuthenticatedRoutesRouteRouteWithChildren,
   AboutRoute: AboutRoute,
-  DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   GamesPastplayedRoute: GamesPastplayedRoute,

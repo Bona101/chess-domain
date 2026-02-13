@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 
+
 // 1. Import the "map" that the plugin built for you
 import { routeTree } from './routeTree.gen'
 
