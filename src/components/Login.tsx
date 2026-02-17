@@ -1,5 +1,6 @@
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import SignupOrLogin from "@/components/SignupOrLogin";
 
 const env = import.meta.env;
 const LOGIN_URL = env.VITE_BACKEND_LOGIN_URL;
@@ -27,24 +28,13 @@ export default function Login() {
             alert("Login failed");
         }
 
-        
+
     };
 
     return (
-        <form onSubmit={handleLogin}>
-            <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-            />
-            <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-            />
-            <button type="submit">Login</button>
-        </form>
+        <div>
+            <SignupOrLogin action="Log in" handleAction={handleLogin} email={email} password={password} setEmail={setEmail} setPassword={setPassword} />
+        </div>
+
     );
 }

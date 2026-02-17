@@ -1,5 +1,6 @@
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import SignupOrLogin from "@/components/SignupOrLogin";
 
 const env = import.meta.env;
 const SIGNUP_URL = env.VITE_BACKEND_SIGNUP_URL;
@@ -9,6 +10,7 @@ export default function Signup() {
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [username, setUsername] = useState("");
 
     const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -16,7 +18,7 @@ export default function Signup() {
         const res = await fetch(SIGNUP_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify({ email, password, username }),
             credentials: "include" // important for session
         });
 
@@ -31,20 +33,9 @@ export default function Signup() {
     };
 
     return (
-        <form onSubmit={handleSignup}>
-            <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-            />
-            <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-            />
-            <button type="submit">Sign Up</button>
-        </form>
+        <div>
+            <SignupOrLogin action="Sign up" handleAction={handleSignup} email={email} password={password} setEmail={setEmail} setPassword={setPassword} username={username} setUsername={setUsername}/>
+        </div>
+
     );
 }

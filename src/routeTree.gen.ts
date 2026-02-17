@@ -9,31 +9,28 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SignupRouteImport } from './routes/signup'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as NonAuthenticatedRoutesRouteRouteImport } from './routes/_non-authenticated-routes/route'
 import { Route as AuthenticatedRoutesRouteRouteImport } from './routes/_authenticated-routes/route'
 import { Route as GamesIndexRouteImport } from './routes/games/index'
+import { Route as NonAuthenticatedRoutesIndexRouteImport } from './routes/_non-authenticated-routes/index'
 import { Route as GamesPastplayedRouteImport } from './routes/games/pastplayed'
+import { Route as NonAuthenticatedRoutesSignupRouteImport } from './routes/_non-authenticated-routes/signup'
+import { Route as NonAuthenticatedRoutesLoginRouteImport } from './routes/_non-authenticated-routes/login'
 import { Route as AuthenticatedRoutesPlayPersonRouteImport } from './routes/_authenticated-routes/play-person'
 import { Route as AuthenticatedRoutesPlayComputerRouteImport } from './routes/_authenticated-routes/play-computer'
 import { Route as AuthenticatedRoutesDashboardRouteImport } from './routes/_authenticated-routes/dashboard'
 
-const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NonAuthenticatedRoutesRouteRoute =
+  NonAuthenticatedRoutesRouteRouteImport.update({
+    id: '/_non-authenticated-routes',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedRoutesRouteRoute =
   AuthenticatedRoutesRouteRouteImport.update({
     id: '/_authenticated-routes',
@@ -44,11 +41,29 @@ const GamesIndexRoute = GamesIndexRouteImport.update({
   path: '/games/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NonAuthenticatedRoutesIndexRoute =
+  NonAuthenticatedRoutesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => NonAuthenticatedRoutesRouteRoute,
+  } as any)
 const GamesPastplayedRoute = GamesPastplayedRouteImport.update({
   id: '/games/pastplayed',
   path: '/games/pastplayed',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NonAuthenticatedRoutesSignupRoute =
+  NonAuthenticatedRoutesSignupRouteImport.update({
+    id: '/signup',
+    path: '/signup',
+    getParentRoute: () => NonAuthenticatedRoutesRouteRoute,
+  } as any)
+const NonAuthenticatedRoutesLoginRoute =
+  NonAuthenticatedRoutesLoginRouteImport.update({
+    id: '/login',
+    path: '/login',
+    getParentRoute: () => NonAuthenticatedRoutesRouteRoute,
+  } as any)
 const AuthenticatedRoutesPlayPersonRoute =
   AuthenticatedRoutesPlayPersonRouteImport.update({
     id: '/play-person',
@@ -70,100 +85,100 @@ const AuthenticatedRoutesDashboardRoute =
 
 export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
-  '/login': typeof LoginRoute
-  '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedRoutesDashboardRoute
   '/play-computer': typeof AuthenticatedRoutesPlayComputerRoute
   '/play-person': typeof AuthenticatedRoutesPlayPersonRoute
+  '/login': typeof NonAuthenticatedRoutesLoginRoute
+  '/signup': typeof NonAuthenticatedRoutesSignupRoute
   '/games/pastplayed': typeof GamesPastplayedRoute
+  '/': typeof NonAuthenticatedRoutesIndexRoute
   '/games': typeof GamesIndexRoute
 }
 export interface FileRoutesByTo {
   '/about': typeof AboutRoute
-  '/login': typeof LoginRoute
-  '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedRoutesDashboardRoute
   '/play-computer': typeof AuthenticatedRoutesPlayComputerRoute
   '/play-person': typeof AuthenticatedRoutesPlayPersonRoute
+  '/login': typeof NonAuthenticatedRoutesLoginRoute
+  '/signup': typeof NonAuthenticatedRoutesSignupRoute
   '/games/pastplayed': typeof GamesPastplayedRoute
+  '/': typeof NonAuthenticatedRoutesIndexRoute
   '/games': typeof GamesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated-routes': typeof AuthenticatedRoutesRouteRouteWithChildren
+  '/_non-authenticated-routes': typeof NonAuthenticatedRoutesRouteRouteWithChildren
   '/about': typeof AboutRoute
-  '/login': typeof LoginRoute
-  '/signup': typeof SignupRoute
   '/_authenticated-routes/dashboard': typeof AuthenticatedRoutesDashboardRoute
   '/_authenticated-routes/play-computer': typeof AuthenticatedRoutesPlayComputerRoute
   '/_authenticated-routes/play-person': typeof AuthenticatedRoutesPlayPersonRoute
+  '/_non-authenticated-routes/login': typeof NonAuthenticatedRoutesLoginRoute
+  '/_non-authenticated-routes/signup': typeof NonAuthenticatedRoutesSignupRoute
   '/games/pastplayed': typeof GamesPastplayedRoute
+  '/_non-authenticated-routes/': typeof NonAuthenticatedRoutesIndexRoute
   '/games/': typeof GamesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/about'
-    | '/login'
-    | '/signup'
     | '/dashboard'
     | '/play-computer'
     | '/play-person'
+    | '/login'
+    | '/signup'
     | '/games/pastplayed'
+    | '/'
     | '/games'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/about'
-    | '/login'
-    | '/signup'
     | '/dashboard'
     | '/play-computer'
     | '/play-person'
+    | '/login'
+    | '/signup'
     | '/games/pastplayed'
+    | '/'
     | '/games'
   id:
     | '__root__'
     | '/_authenticated-routes'
+    | '/_non-authenticated-routes'
     | '/about'
-    | '/login'
-    | '/signup'
     | '/_authenticated-routes/dashboard'
     | '/_authenticated-routes/play-computer'
     | '/_authenticated-routes/play-person'
+    | '/_non-authenticated-routes/login'
+    | '/_non-authenticated-routes/signup'
     | '/games/pastplayed'
+    | '/_non-authenticated-routes/'
     | '/games/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRoutesRouteRoute: typeof AuthenticatedRoutesRouteRouteWithChildren
+  NonAuthenticatedRoutesRouteRoute: typeof NonAuthenticatedRoutesRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
-  LoginRoute: typeof LoginRoute
-  SignupRoute: typeof SignupRoute
   GamesPastplayedRoute: typeof GamesPastplayedRoute
   GamesIndexRoute: typeof GamesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/about': {
       id: '/about'
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_non-authenticated-routes': {
+      id: '/_non-authenticated-routes'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof NonAuthenticatedRoutesRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated-routes': {
@@ -180,12 +195,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GamesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_non-authenticated-routes/': {
+      id: '/_non-authenticated-routes/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof NonAuthenticatedRoutesIndexRouteImport
+      parentRoute: typeof NonAuthenticatedRoutesRouteRoute
+    }
     '/games/pastplayed': {
       id: '/games/pastplayed'
       path: '/games/pastplayed'
       fullPath: '/games/pastplayed'
       preLoaderRoute: typeof GamesPastplayedRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_non-authenticated-routes/signup': {
+      id: '/_non-authenticated-routes/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof NonAuthenticatedRoutesSignupRouteImport
+      parentRoute: typeof NonAuthenticatedRoutesRouteRoute
+    }
+    '/_non-authenticated-routes/login': {
+      id: '/_non-authenticated-routes/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof NonAuthenticatedRoutesLoginRouteImport
+      parentRoute: typeof NonAuthenticatedRoutesRouteRoute
     }
     '/_authenticated-routes/play-person': {
       id: '/_authenticated-routes/play-person'
@@ -229,11 +265,29 @@ const AuthenticatedRoutesRouteRouteWithChildren =
     AuthenticatedRoutesRouteRouteChildren,
   )
 
+interface NonAuthenticatedRoutesRouteRouteChildren {
+  NonAuthenticatedRoutesLoginRoute: typeof NonAuthenticatedRoutesLoginRoute
+  NonAuthenticatedRoutesSignupRoute: typeof NonAuthenticatedRoutesSignupRoute
+  NonAuthenticatedRoutesIndexRoute: typeof NonAuthenticatedRoutesIndexRoute
+}
+
+const NonAuthenticatedRoutesRouteRouteChildren: NonAuthenticatedRoutesRouteRouteChildren =
+  {
+    NonAuthenticatedRoutesLoginRoute: NonAuthenticatedRoutesLoginRoute,
+    NonAuthenticatedRoutesSignupRoute: NonAuthenticatedRoutesSignupRoute,
+    NonAuthenticatedRoutesIndexRoute: NonAuthenticatedRoutesIndexRoute,
+  }
+
+const NonAuthenticatedRoutesRouteRouteWithChildren =
+  NonAuthenticatedRoutesRouteRoute._addFileChildren(
+    NonAuthenticatedRoutesRouteRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoutesRouteRoute: AuthenticatedRoutesRouteRouteWithChildren,
+  NonAuthenticatedRoutesRouteRoute:
+    NonAuthenticatedRoutesRouteRouteWithChildren,
   AboutRoute: AboutRoute,
-  LoginRoute: LoginRoute,
-  SignupRoute: SignupRoute,
   GamesPastplayedRoute: GamesPastplayedRoute,
   GamesIndexRoute: GamesIndexRoute,
 }

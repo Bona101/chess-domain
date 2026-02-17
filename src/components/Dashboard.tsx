@@ -1,9 +1,8 @@
 import LogoutButton from "@/components/LogoutButton";
-import { useRouter, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 
 
 export default function Dashboard() {
-    const router = useRouter();
     return (
         <div className="bg-[#51E7EB] flex-1">
             <div className="flex">
