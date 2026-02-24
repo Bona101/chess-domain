@@ -1,8 +1,11 @@
 import LogoutButton from "@/components/LogoutButton";
 import { Link } from "@tanstack/react-router";
 
+import { useLoaderData } from "@tanstack/react-router";
 
 export default function Dashboard() {
+    const { username } = useLoaderData({ from: "/_authenticated-routes/dashboard" });
+
     return (
         <div className="bg-[#51E7EB] flex-1">
             <div className="flex">
@@ -11,13 +14,15 @@ export default function Dashboard() {
                         <div className="bg-gray-500 rounded-full w-4 h-4">
 
                         </div>
-                        <p>Username</p>
+                        <p>{username ?? "username"}</p>
                     </div>
-                    <Link to="/play-computer">
-                        <button className="bg-[#5196EB] block mb-5 p-2 rounded-sm w-[8rem] cursor-pointer">Play Computer</button>
+
+                    <Link to="/play-computer" className="bg-[#5196EB] block mb-5 p-2 rounded-sm w-[8rem] cursor-pointer">
+                        Play Computer
                     </Link>
-                    <Link to="/play-person">
-                        <button className="bg-[#5196EB] block p-2 rounded-sm w-[8rem] cursor-pointer">Play Person</button>
+
+                    <Link to="/play-person" className="bg-[#5196EB] block p-2 rounded-sm w-[8rem] cursor-pointer">
+                        Play Person
                     </Link>
                 </div>
 

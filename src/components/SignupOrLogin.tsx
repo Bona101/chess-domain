@@ -1,5 +1,26 @@
 import { Link } from "@tanstack/react-router";
 
+type AuthAction = "Sign up" | "Log in";
+
+interface SignupOrLoginProps {
+    action: AuthAction,
+    handleAction: (e: React.FormEvent<HTMLFormElement>) => void,
+    email: string,
+    setEmail: (value: string) => void,
+    password: string,
+    setPassword: (value: string) => void,
+    // username?: string,
+    setUsername?: (value: string) => void
+}
+
+type CompulsoryUsernameForSignup = (
+    | { action: "Sign up"; username: string; setUsername: (value: string) => void }
+    | { action: "Log in"; username?: string; setUsername?: (value: string) => void }
+)
+
+type FinalProps = SignupOrLoginProps & CompulsoryUsernameForSignup;
+
+
 export default function SignupOrLogin({ action,
     handleAction,
     email,
@@ -8,19 +29,7 @@ export default function SignupOrLogin({ action,
     setPassword,
     username,
     setUsername
-}: {
-    action: string,
-    handleAction: (e: React.FormEvent<HTMLFormElement>) => void,
-    email: string,
-    setEmail: (value: string) => void,
-    password: string,
-    setPassword: (value: string) => void,
-    // username?: string,
-    setUsername?: (value: string) => void
-} & (
-        | { action: "Sign up"; username: string; setUsername: (value: string) => void }
-        | { action: "Log in"; username?: string; setUsername?: (value: string) => void }
-    )
+}: FinalProps
 ) {
 
     return (
@@ -37,6 +46,7 @@ export default function SignupOrLogin({ action,
                             value={email}
                             onChange={e => setEmail(e.target.value)}
                             className="bg-white h-10 w-full text-lg rounded-sm p-1"
+                            required
                         />
                     </div>
                     <div className="mb-12">
@@ -48,6 +58,7 @@ export default function SignupOrLogin({ action,
                             value={password}
                             onChange={e => setPassword(e.target.value)}
                             className="bg-white h-10 w-full text-lg rounded-sm p-1"
+                            required
                         />
                     </div>
                     {action === "Sign up" && <div className="mb-12">
@@ -59,6 +70,7 @@ export default function SignupOrLogin({ action,
                             value={username}
                             onChange={e => setUsername(e.target.value)}
                             className="bg-white h-10 w-full text-lg rounded-sm p-1"
+                            required
                         />
                     </div>}
                     <button className="bg-gray-300 w-full py-2 mt-4 mb-12 cursor-pointer">{action} with Google?</button>
@@ -70,7 +82,7 @@ export default function SignupOrLogin({ action,
             </div>
             <div className="flex justify-end gap-2 bg-9red-50 w-1/4">
                 <p>{action === "Sign up" ? "Already have an account?" : "Don't have an account?"}</p>
-                <Link to="/login"> <p className="text-blue-500">{action === "Sign up" ? "Login" : "Sign up"}</p></Link>
+                <Link to={action === "Sign up" ? "/login" : "/signup"}> <p className="text-blue-500">{action === "Sign up" ? "Log in" : "Sign up"}</p></Link>
 
             </div>
         </div>

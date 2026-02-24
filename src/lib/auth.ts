@@ -6,10 +6,8 @@ export async function getMe() {
         credentials: "include",
     });
 
-    if (!res.ok) { 
-        console.log("notMe")
+    if (!res.ok) {
         return null; 
     }
-    console.log("actuallyMe")
     return res.json();
 }

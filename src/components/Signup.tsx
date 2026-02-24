@@ -15,6 +15,10 @@ export default function Signup() {
     const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
+        if (!email || !password || !username) {
+            return;
+        }
+ 
         const res = await fetch(SIGNUP_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },

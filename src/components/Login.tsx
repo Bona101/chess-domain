@@ -13,6 +13,10 @@ export default function Login() {
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
+        if (!email || !password) {
+            return;
+        }
+
         const res = await fetch(LOGIN_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
