@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import GoogleButton from "@/components/GoogleButton";
 
 type AuthAction = "Sign up" | "Log in";
 
@@ -73,7 +74,7 @@ export default function SignupOrLogin({ action,
                             required
                         />
                     </div>}
-                    <button className="bg-gray-300 w-full py-2 mt-4 mb-12 cursor-pointer">{action} with Google?</button>
+                    <GoogleButton />
                     <div className="flex justify-end">
                         <button type="submit" className="w-22 bg-white rounded-sm py-1 cursor-pointer">{action}</button>
                     </div>
