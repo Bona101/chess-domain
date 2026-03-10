@@ -3,8 +3,11 @@ import { useState } from "react";
 const env = import.meta.env;
 const RESET_PASSWORD_URL = env.VITE_BACKEND_RESET_PASSWORD_URL;
 
+interface ResetPasswordProps {
+    token: string
+}
 
-export default function ResetPassword() {
+export default function ResetPassword({token}: ResetPasswordProps) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -18,14 +21,14 @@ export default function ResetPassword() {
         const res = await fetch(RESET_PASSWORD_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, newPassword: password }),
+            body: JSON.stringify({ email, newPassword: password, token }),
             credentials: "include" // important to send cookie
         });
 
         if (res.ok) {
-            alert("Check your email.");
+            alert("Password set successfully.");
         } else {
-            alert("Sending email failed.");
+            alert("Password reset failed.");
         }
 
 

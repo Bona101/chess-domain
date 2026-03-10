@@ -75,7 +75,7 @@ export default function SignupOrLogin({ action,
                         />
                     </div>}
                     <GoogleButton />
-                    {action === "Log in" && <Link to="/dashboard" className="text-blue-500">Forgot Password?</Link> }
+                    {action === "Log in" && <Link to="/forgot-password" className="text-blue-500">Forgot Password?</Link> }
                     <div className="flex justify-end">
                         <button type="submit" className="w-22 bg-white rounded-sm py-1 cursor-pointer">{action}</button>
                     </div>

@@ -17,9 +17,12 @@ import { Route as NonAuthenticatedRoutesIndexRouteImport } from './routes/_non-a
 import { Route as GamesPastplayedRouteImport } from './routes/games/pastplayed'
 import { Route as NonAuthenticatedRoutesSignupRouteImport } from './routes/_non-authenticated-routes/signup'
 import { Route as NonAuthenticatedRoutesLoginRouteImport } from './routes/_non-authenticated-routes/login'
+import { Route as NonAuthenticatedRoutesForgotPasswordRouteImport } from './routes/_non-authenticated-routes/forgot-password'
 import { Route as AuthenticatedRoutesPlayPersonRouteImport } from './routes/_authenticated-routes/play-person'
 import { Route as AuthenticatedRoutesPlayComputerRouteImport } from './routes/_authenticated-routes/play-computer'
 import { Route as AuthenticatedRoutesDashboardRouteImport } from './routes/_authenticated-routes/dashboard'
+import { Route as NonAuthenticatedRoutesResetPasswordIndexRouteImport } from './routes/_non-authenticated-routes/reset-password/index'
+import { Route as NonAuthenticatedRoutesResetPasswordTokenRouteImport } from './routes/_non-authenticated-routes/reset-password/$token'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
@@ -64,6 +67,12 @@ const NonAuthenticatedRoutesLoginRoute =
     path: '/login',
     getParentRoute: () => NonAuthenticatedRoutesRouteRoute,
   } as any)
+const NonAuthenticatedRoutesForgotPasswordRoute =
+  NonAuthenticatedRoutesForgotPasswordRouteImport.update({
+    id: '/forgot-password',
+    path: '/forgot-password',
+    getParentRoute: () => NonAuthenticatedRoutesRouteRoute,
+  } as any)
 const AuthenticatedRoutesPlayPersonRoute =
   AuthenticatedRoutesPlayPersonRouteImport.update({
     id: '/play-person',
@@ -82,28 +91,46 @@ const AuthenticatedRoutesDashboardRoute =
     path: '/dashboard',
     getParentRoute: () => AuthenticatedRoutesRouteRoute,
   } as any)
+const NonAuthenticatedRoutesResetPasswordIndexRoute =
+  NonAuthenticatedRoutesResetPasswordIndexRouteImport.update({
+    id: '/reset-password/',
+    path: '/reset-password/',
+    getParentRoute: () => NonAuthenticatedRoutesRouteRoute,
+  } as any)
+const NonAuthenticatedRoutesResetPasswordTokenRoute =
+  NonAuthenticatedRoutesResetPasswordTokenRouteImport.update({
+    id: '/reset-password/$token',
+    path: '/reset-password/$token',
+    getParentRoute: () => NonAuthenticatedRoutesRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/dashboard': typeof AuthenticatedRoutesDashboardRoute
   '/play-computer': typeof AuthenticatedRoutesPlayComputerRoute
   '/play-person': typeof AuthenticatedRoutesPlayPersonRoute
+  '/forgot-password': typeof NonAuthenticatedRoutesForgotPasswordRoute
   '/login': typeof NonAuthenticatedRoutesLoginRoute
   '/signup': typeof NonAuthenticatedRoutesSignupRoute
   '/games/pastplayed': typeof GamesPastplayedRoute
   '/': typeof NonAuthenticatedRoutesIndexRoute
   '/games': typeof GamesIndexRoute
+  '/reset-password/$token': typeof NonAuthenticatedRoutesResetPasswordTokenRoute
+  '/reset-password': typeof NonAuthenticatedRoutesResetPasswordIndexRoute
 }
 export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/dashboard': typeof AuthenticatedRoutesDashboardRoute
   '/play-computer': typeof AuthenticatedRoutesPlayComputerRoute
   '/play-person': typeof AuthenticatedRoutesPlayPersonRoute
+  '/forgot-password': typeof NonAuthenticatedRoutesForgotPasswordRoute
   '/login': typeof NonAuthenticatedRoutesLoginRoute
   '/signup': typeof NonAuthenticatedRoutesSignupRoute
   '/games/pastplayed': typeof GamesPastplayedRoute
   '/': typeof NonAuthenticatedRoutesIndexRoute
   '/games': typeof GamesIndexRoute
+  '/reset-password/$token': typeof NonAuthenticatedRoutesResetPasswordTokenRoute
+  '/reset-password': typeof NonAuthenticatedRoutesResetPasswordIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -113,11 +140,14 @@ export interface FileRoutesById {
   '/_authenticated-routes/dashboard': typeof AuthenticatedRoutesDashboardRoute
   '/_authenticated-routes/play-computer': typeof AuthenticatedRoutesPlayComputerRoute
   '/_authenticated-routes/play-person': typeof AuthenticatedRoutesPlayPersonRoute
+  '/_non-authenticated-routes/forgot-password': typeof NonAuthenticatedRoutesForgotPasswordRoute
   '/_non-authenticated-routes/login': typeof NonAuthenticatedRoutesLoginRoute
   '/_non-authenticated-routes/signup': typeof NonAuthenticatedRoutesSignupRoute
   '/games/pastplayed': typeof GamesPastplayedRoute
   '/_non-authenticated-routes/': typeof NonAuthenticatedRoutesIndexRoute
   '/games/': typeof GamesIndexRoute
+  '/_non-authenticated-routes/reset-password/$token': typeof NonAuthenticatedRoutesResetPasswordTokenRoute
+  '/_non-authenticated-routes/reset-password/': typeof NonAuthenticatedRoutesResetPasswordIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -126,22 +156,28 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/play-computer'
     | '/play-person'
+    | '/forgot-password'
     | '/login'
     | '/signup'
     | '/games/pastplayed'
     | '/'
     | '/games'
+    | '/reset-password/$token'
+    | '/reset-password'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/about'
     | '/dashboard'
     | '/play-computer'
     | '/play-person'
+    | '/forgot-password'
     | '/login'
     | '/signup'
     | '/games/pastplayed'
     | '/'
     | '/games'
+    | '/reset-password/$token'
+    | '/reset-password'
   id:
     | '__root__'
     | '/_authenticated-routes'
@@ -150,11 +186,14 @@ export interface FileRouteTypes {
     | '/_authenticated-routes/dashboard'
     | '/_authenticated-routes/play-computer'
     | '/_authenticated-routes/play-person'
+    | '/_non-authenticated-routes/forgot-password'
     | '/_non-authenticated-routes/login'
     | '/_non-authenticated-routes/signup'
     | '/games/pastplayed'
     | '/_non-authenticated-routes/'
     | '/games/'
+    | '/_non-authenticated-routes/reset-password/$token'
+    | '/_non-authenticated-routes/reset-password/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -223,6 +262,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NonAuthenticatedRoutesLoginRouteImport
       parentRoute: typeof NonAuthenticatedRoutesRouteRoute
     }
+    '/_non-authenticated-routes/forgot-password': {
+      id: '/_non-authenticated-routes/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof NonAuthenticatedRoutesForgotPasswordRouteImport
+      parentRoute: typeof NonAuthenticatedRoutesRouteRoute
+    }
     '/_authenticated-routes/play-person': {
       id: '/_authenticated-routes/play-person'
       path: '/play-person'
@@ -243,6 +289,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedRoutesDashboardRouteImport
       parentRoute: typeof AuthenticatedRoutesRouteRoute
+    }
+    '/_non-authenticated-routes/reset-password/': {
+      id: '/_non-authenticated-routes/reset-password/'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof NonAuthenticatedRoutesResetPasswordIndexRouteImport
+      parentRoute: typeof NonAuthenticatedRoutesRouteRoute
+    }
+    '/_non-authenticated-routes/reset-password/$token': {
+      id: '/_non-authenticated-routes/reset-password/$token'
+      path: '/reset-password/$token'
+      fullPath: '/reset-password/$token'
+      preLoaderRoute: typeof NonAuthenticatedRoutesResetPasswordTokenRouteImport
+      parentRoute: typeof NonAuthenticatedRoutesRouteRoute
     }
   }
 }
@@ -266,16 +326,25 @@ const AuthenticatedRoutesRouteRouteWithChildren =
   )
 
 interface NonAuthenticatedRoutesRouteRouteChildren {
+  NonAuthenticatedRoutesForgotPasswordRoute: typeof NonAuthenticatedRoutesForgotPasswordRoute
   NonAuthenticatedRoutesLoginRoute: typeof NonAuthenticatedRoutesLoginRoute
   NonAuthenticatedRoutesSignupRoute: typeof NonAuthenticatedRoutesSignupRoute
   NonAuthenticatedRoutesIndexRoute: typeof NonAuthenticatedRoutesIndexRoute
+  NonAuthenticatedRoutesResetPasswordTokenRoute: typeof NonAuthenticatedRoutesResetPasswordTokenRoute
+  NonAuthenticatedRoutesResetPasswordIndexRoute: typeof NonAuthenticatedRoutesResetPasswordIndexRoute
 }
 
 const NonAuthenticatedRoutesRouteRouteChildren: NonAuthenticatedRoutesRouteRouteChildren =
   {
+    NonAuthenticatedRoutesForgotPasswordRoute:
+      NonAuthenticatedRoutesForgotPasswordRoute,
     NonAuthenticatedRoutesLoginRoute: NonAuthenticatedRoutesLoginRoute,
     NonAuthenticatedRoutesSignupRoute: NonAuthenticatedRoutesSignupRoute,
     NonAuthenticatedRoutesIndexRoute: NonAuthenticatedRoutesIndexRoute,
+    NonAuthenticatedRoutesResetPasswordTokenRoute:
+      NonAuthenticatedRoutesResetPasswordTokenRoute,
+    NonAuthenticatedRoutesResetPasswordIndexRoute:
+      NonAuthenticatedRoutesResetPasswordIndexRoute,
   }
 
 const NonAuthenticatedRoutesRouteRouteWithChildren =
