@@ -1,3 +1,5 @@
+import Board from "./Board";
+
 export default function PlayOpponent({
     opponent
 }: {
@@ -21,9 +23,9 @@ export default function PlayOpponent({
                                 <p>Q, Bd, N</p>
                             </div>
                         </div>
-                        <div className="bg-gray-500 w-[60%] aspect-square">
 
-                        </div>
+                        <Board />
+
                         <div className="flex items-center gap-3 w-[60%] my-3">
                             <div className="bg-gray-500 rounded-full w-7 h-7">
 
