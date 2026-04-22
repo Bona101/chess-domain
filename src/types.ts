@@ -12,3 +12,5 @@ export type Piece =
     "pawn-w" |
     "pawn-b" |
     null;
+
+export type Shade = "light" | "dark";
