@@ -19,7 +19,7 @@ export default function Board() {
         ["rook-w", "knight-w", "bishop-w", "queen-w", "king-w", "bishop-w", "knight-w", "rook-w"]
     ]
     const [gameState, setGameState] = useState(INITIAL_GAMESTATE);
-    const [validMoves, setValidMoves] = useState(new Set());
+    const [validMoves, setValidMoves] = useState<Set<string>>(new Set());
 
     function handleMove(from: string, to: string) {
         const [fromRow, fromCol] = from.split("-").map(Number);
@@ -39,6 +39,7 @@ export default function Board() {
     }
 
     function calculateValidMoves(generalizedPiece: string, from: string, color: string) {
+        let calculatedValidMoves = new Set<string>();
         switch (generalizedPiece) {
             case "pawn":
                 calculatePawnMoves(from, color);
@@ -47,18 +48,20 @@ export default function Board() {
                 calculateKnightMoves(from, color);
                 break;
             case "bishop":
-                calculateBishopMoves(from, color);
+                calculatedValidMoves = calculateBishopMoves(from, color);
                 break;
             case "rook":
-                calculateRookMoves(from, color);
+                calculatedValidMoves = calculateRookMoves(from, color);
                 break;
             case "queen":
-                calculateQueenMoves(from, color);
+                calculatedValidMoves = calculateQueenMoves(from, color);
                 break;
             case "king":
                 calculateKingMoves(from, color);
                 break;
         }
+
+        setValidMoves(() => new Set(calculatedValidMoves))
     }
 
     function calculatePawnMoves(from: string, color: string) {
@@ -69,7 +72,7 @@ export default function Board() {
     function calculateRookMoves(from: string, color: string) {
         const [fromRow, fromCol] = from.split("-").map(Number);
 
-        const validRookMoves = new Set();
+        const validRookMoves = new Set<string>();
         const oppositeColor = getOppositeColorOf(color);
 
         for (let i = 1; i < 8; i++) {
@@ -116,9 +119,7 @@ export default function Board() {
 
             validRookMoves.add(`${fromRow}-${fromCol + i}`);
         }
-        console.log("we got here");
-        console.log(validRookMoves)
-        setValidMoves(() => validRookMoves)
+        return new Set(validRookMoves);
 
 
 
@@ -129,10 +130,70 @@ export default function Board() {
 
     }
     function calculateBishopMoves(from: string, color: string) {
+        const [fromRow, fromCol] = from.split("-").map(Number);
+
+        const validBishopMoves = new Set<string>();
+        const oppositeColor = getOppositeColorOf(color);
+
+        for (let i = 1; i < 8; i++) {
+            if (fromRow - i < 0) break;
+            if (fromCol - i < 0) break;
+            if (colorOf(gameState[fromRow - i][fromCol - i]) === color) break;
+            if (colorOf(gameState[fromRow - i][fromCol - i]) === oppositeColor) {
+                validBishopMoves.add(`${fromRow - i}-${fromCol - i}`);
+                break;
+            };
+
+            validBishopMoves.add(`${fromRow - i}-${fromCol - i}`);
+        }
+
+        for (let i = 1; i < 8; i++) {
+            if (fromRow + i > 7) break;
+            if (fromCol + i > 7) break;
+            if (colorOf(gameState[fromRow + i][fromCol + i]) === color) break;
+            if (colorOf(gameState[fromRow + i][fromCol + i]) === oppositeColor) {
+                validBishopMoves.add(`${fromRow + i}-${fromCol + i}`);
+                break;
+            };
+
+            validBishopMoves.add(`${fromRow + i}-${fromCol + i}`);
+        }
+
+        for (let i = 1; i < 8; i++) {
+            if (fromRow + i > 7) break;
+            if (fromCol - i < 0) break;
+            if (colorOf(gameState[fromRow + i][fromCol - i]) === color) break;
+            if (colorOf(gameState[fromRow + i][fromCol - i]) === oppositeColor) {
+                validBishopMoves.add(`${fromRow + i}-${fromCol - i}`);
+                break;
+            };
+
+            validBishopMoves.add(`${fromRow + i}-${fromCol - i}`);
+        }
+
+        for (let i = 1; i < 8; i++) {
+            if (fromRow - i < 0) break;
+            if (fromCol + i > 7) break;
+            if (colorOf(gameState[fromRow - i][fromCol + i]) === color) break;
+            if (colorOf(gameState[fromRow - i][fromCol + i]) === oppositeColor) {
+                validBishopMoves.add(`${fromRow - i}-${fromCol + i}`);
+                break;
+            };
+
+            validBishopMoves.add(`${fromRow - i}-${fromCol + i}`);
+        }
+
+        return new Set(validBishopMoves);
+
+
+
 
     }
     function calculateQueenMoves(from: string, color: string) {
+        const validBishopMoves = calculateBishopMoves(from, color);
+        const validRookMoves = calculateRookMoves(from, color);
 
+        return new Set([...validRookMoves, ...validBishopMoves])
     }
     function calculateKingMoves(from: string, color: string) {
 
@@ -147,7 +208,7 @@ export default function Board() {
         switch (color) {
             case "w":
                 return "b";
-                
+
             case "b":
                 return "w";
 
