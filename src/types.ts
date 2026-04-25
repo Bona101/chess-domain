@@ -14,3 +14,5 @@ export type Piece =
     null;
 
 export type Shade = "light" | "dark";
+
+export type WhoseTurn = "w" | "b" | null;
