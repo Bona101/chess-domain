@@ -9,10 +9,9 @@ interface SquareProps {
     highlight: boolean;
     whoseTurn: WhoseTurn;
     handleClick: (id: string, piece: Piece) => void;
-    validMoves: Set<string>
 }
 
-export default function Square({ id, shade, piece, highlight, whoseTurn, handleClick, validMoves }: SquareProps) {
+export default function Square({ id, shade, piece, highlight, whoseTurn, handleClick }: SquareProps) {
     const { ref: dropRef } = useDroppable({ id });
 
     const { ref: dragRef } = useDraggable({
