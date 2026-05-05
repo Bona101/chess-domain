@@ -204,20 +204,43 @@ export default function Board({ setMovesPlayed }: BoardProps) {
 
         let i = 1;
         let l = 1;
-
+console.log("why")
         for (let k = 0; k < 2; k++) {
-            for (let j = 0; j < 2; j++) {
+console.log("why not")
 
-                if (fromCol - (2 * l) < 0) break;
-                if (fromCol - (2 * l) > 7) break;
-                if (fromRow - i < 0) break;
-                if (fromRow - i > 7) break;
+            for (let j = 0; j < 2; j++) {
+console.log("why not why")
+
+
+                if (fromCol - (2 * l) < 0) {
+                    i = -1;
+                    continue;
+                }
+                console.log("survival");
+                if (fromCol - (2 * l) > 7) {
+                    i = -1;
+                    continue;
+                }
+                console.log("survival");
+                if (fromRow - i < 0) {
+                    i = -1;
+                    continue;
+                }
+                console.log("survival");
+                if (fromRow - i > 7) {
+                    i = -1;
+                    continue;
+                }
+
+                console.log("survival");
 
 
                 if (colorOf(gameState[fromRow - i][fromCol - (2 * l)]) === color) {
+                    console.log("theres no way")
                     i = -1;
                     continue;
                 };
+                console.log("theres way")
 
                 validKnightMoves.add(`${fromRow - i}-${fromCol - (2 * l)}`);
                 i = -1;
@@ -231,16 +254,30 @@ export default function Board({ setMovesPlayed }: BoardProps) {
         for (let k = 0; k < 2; k++) {
             for (let j = 0; j < 2; j++) {
 
-                if (fromRow - (2 * l) < 0) break;
-                if (fromRow - (2 * l) > 7) break;
-                if (fromCol - i < 0) break;
-                if (fromCol - i > 7) break;
+                if (fromRow - (2 * l) < 0) {
+                    i = -1;
+                    continue;
+                }
+                if (fromRow - (2 * l) > 7) {
+                    i = -1;
+                    continue;
+                }
+                if (fromCol - i < 0) {
+                    i = -1;
+                    continue;
+                }
+                if (fromCol - i > 7) {
+                    i = -1;
+                    continue;
+                }
 
 
                 if (colorOf(gameState[fromRow - (2 * l)][fromCol - i]) === color) {
+                    console.log("beautiful")
                     i = -1;
                     continue;
                 };
+                console.log("boy")
 
                 validKnightMoves.add(`${fromRow - (2 * l)}-${fromCol - i}`);
                 i = -1;
@@ -405,8 +442,9 @@ export default function Board({ setMovesPlayed }: BoardProps) {
             clonedGameStateSingleBranch[fromRow][fromCol] = null;
             let colorOfPiece = colorOf(piece);
             if (!colorOfPiece) continue;
+            if (!piece) continue;
             console.log(clonedGameStateSingleBranch)
-            let kingInCheck = checkIfKingIsInCheck(clonedGameStateSingleBranch, colorOfPiece);
+            let kingInCheck = checkIfKingIsInCheck(clonedGameStateSingleBranch, colorOfPiece, piece, move);
 
             if (!kingInCheck) calculatedLegalMoves.add(move);
         }
@@ -416,9 +454,14 @@ export default function Board({ setMovesPlayed }: BoardProps) {
 
     }
 
-    function checkIfKingIsInCheck(clonedGameState: Piece[][], color: string) {
-        const kingPosition = color === "w" ? whiteKingPosition : blackKingPosition;
-        const [row, col] = kingPosition.split("-").map(Number);
+    function checkIfKingIsInCheck(clonedGameState: Piece[][], color: string, pieceInMotion: string, branchStartingSquare: string) {
+        let realOrFakeKingPosition = color === "w" ? whiteKingPosition : blackKingPosition;
+
+        if (colorOf(pieceInMotion) !== color) return;
+        if (pieceInMotion.slice(0, -2) === "king"){
+            realOrFakeKingPosition = branchStartingSquare;
+        }
+        const [row, col] = realOrFakeKingPosition.split("-").map(Number);
 
         const oppositeColor = getOppositeColorOf(color);
 
@@ -614,7 +657,7 @@ export default function Board({ setMovesPlayed }: BoardProps) {
 
 
                 if (colorOf(clonedGameState[row - (2 * l)][col - i]) === oppositeColor) {
-                    if (clonedGameState[row - i][col - (2 * l)]?.slice(0, -2) === "knight") {
+                    if (clonedGameState[row - (2 * l)][col - i]?.slice(0, -2) === "knight") {
                         return true;
                         // break;
                     }
