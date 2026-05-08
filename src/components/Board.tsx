@@ -204,12 +204,12 @@ export default function Board({ setMovesPlayed }: BoardProps) {
 
         let i = 1;
         let l = 1;
-console.log("why")
+        console.log("why")
         for (let k = 0; k < 2; k++) {
-console.log("why not")
+            console.log("why not")
 
             for (let j = 0; j < 2; j++) {
-console.log("why not why")
+                console.log("why not why")
 
 
                 if (fromCol - (2 * l) < 0) {
@@ -403,19 +403,42 @@ console.log("why not why")
         setLegalMoves(() => new Set())
     }
 
-    function registerMove(pieceFirstLetter: string, from: string, to: string) {
+    function convertToChessNotation(piece: string, from: string, to: string) {
+        const files: Record<number, string> = {
+            0: "a",
+            1: "b",
+            2: "c",
+            3: "d",
+            4: "e",
+            5: "f",
+            6: "g",
+            7: "h",
+        }
+
+        const pieceSectionOfMoveNotation =
+            piece === "pawn" ? "" :
+                piece === "knight" ? "N" : piece.slice(0, 1).toUpperCase();
+
+        const [toRow, toCol] = to.split("-").map(Number);
+
+        const move = `${pieceSectionOfMoveNotation}${files[toCol]}${8 - toRow}`;
+
+        return move;
+    }
+    function registerMove(piece: string, from: string, to: string) {
+        const move = convertToChessNotation(piece, from, to)
         setMovesPlayed((prev) => {
             let curr = [...prev];
 
             if (curr.length === 0) {
-                return [[`${pieceFirstLetter}-${from}-${to}`]]
+                return [[move]]
             }
 
             if (curr[curr.length - 1].length < 2) {
-                curr[curr.length - 1] = [...curr[curr.length - 1], `${pieceFirstLetter}-${from}-${to}`]
+                curr[curr.length - 1] = [...curr[curr.length - 1], move]
             }
             else {
-                curr.push([`${pieceFirstLetter}-${from}-${to}`]);
+                curr.push([move]);
             }
 
             return curr;
@@ -445,8 +468,14 @@ console.log("why not why")
             if (!piece) continue;
             console.log(clonedGameStateSingleBranch)
             let kingInCheck = checkIfKingIsInCheck(clonedGameStateSingleBranch, colorOfPiece, piece, move);
+            if (kingInCheck !== undefined) {
 
-            if (!kingInCheck) calculatedLegalMoves.add(move);
+                if (!kingInCheck[0]) calculatedLegalMoves.add(move);
+            } else {
+                calculatedLegalMoves.add(move);
+            }
+            console.log("apples");
+            console.log(kingInCheck);
         }
 
         console.log(calculatedLegalMoves);
@@ -458,7 +487,7 @@ console.log("why not why")
         let realOrFakeKingPosition = color === "w" ? whiteKingPosition : blackKingPosition;
 
         if (colorOf(pieceInMotion) !== color) return;
-        if (pieceInMotion.slice(0, -2) === "king"){
+        if (pieceInMotion.slice(0, -2) === "king") {
             realOrFakeKingPosition = branchStartingSquare;
         }
         const [row, col] = realOrFakeKingPosition.split("-").map(Number);
@@ -472,10 +501,13 @@ console.log("why not why")
             if (colorOf(clonedGameState[row - i][col]) === color) break;
             if (colorOf(clonedGameState[row - i][col]) === oppositeColor) {
                 if (i === 1 && clonedGameState[row - i][col]?.slice(0, -2) === "king") {
-                    return true;
+                    return [true, "king", clonedGameState[row - i][col], [[row - i], [col]]];
                 }
                 if (clonedGameState[row - i][col]?.slice(0, -2) === "queen" || clonedGameState[row - i][col]?.slice(0, -2) === "rook") {
-                    return true;
+                    return [true, "queen or rook", clonedGameState[row - i][col], [[row - i], [col]]];;
+                }
+                else {
+                    break;
                 }
                 // validRookMoves.add(`${fromRow - i}-${fromCol}`);
             };
@@ -490,10 +522,13 @@ console.log("why not why")
             if (colorOf(clonedGameState[row + i][col]) === color) break;
             if (colorOf(clonedGameState[row + i][col]) === oppositeColor) {
                 if (i === 1 && clonedGameState[row + i][col]?.slice(0, -2) === "king") {
-                    return true;
+                    return [true, "king", clonedGameState[row + i][col], [[row + i], [col]]];
                 }
                 if (clonedGameState[row + i][col]?.slice(0, -2) === "queen" || clonedGameState[row + i][col]?.slice(0, -2) === "rook") {
-                    return true;
+                    return [true, "queen or rook", clonedGameState[row + i][col], [[row + i], [col]]];;
+                }
+                else {
+                    break;
                 }
                 // validRookMoves.add(`${fromRow + i}-${fromCol}`);
 
@@ -509,10 +544,13 @@ console.log("why not why")
             if (colorOf(clonedGameState[row][col - i]) === color) break;
             if (colorOf(clonedGameState[row][col - i]) === oppositeColor) {
                 if (i === 1 && clonedGameState[row][col - i]?.slice(0, -2) === "king") {
-                    return true;
+                    return [true, "king", clonedGameState[row][col - i], [[row], [col - i]]];;
                 }
                 if (clonedGameState[row][col - i]?.slice(0, -2) === "queen" || clonedGameState[row][col - i]?.slice(0, -2) === "rook") {
-                    return true;
+                    return [true, "queen or rook", clonedGameState[row][col - i], [[row], [col - i]]];;
+                }
+                else {
+                    break;
                 }
                 // validRookMoves.add(`${fromRow}-${fromCol - i}`);
 
@@ -529,10 +567,13 @@ console.log("why not why")
             if (colorOf(clonedGameState[row][col + i]) === color) break;
             if (colorOf(clonedGameState[row][col + i]) === oppositeColor) {
                 if (i === 1 && clonedGameState[row][col + i]?.slice(0, -2) === "king") {
-                    return true;
+                    return [true, "king", clonedGameState[row][col + i], [[row], [col + i]]];;
                 }
                 if (clonedGameState[row][col + i]?.slice(0, -2) === "queen" || clonedGameState[row][col + i]?.slice(0, -2) === "rook") {
-                    return true;
+                    return [true, "queen or rook", clonedGameState[row][col + i], [[row], [col + i]]];;
+                }
+                else {
+                    break;
                 }
                 // validRookMoves.add(`${fromRow}-${fromCol + i}`);
             };
@@ -550,10 +591,13 @@ console.log("why not why")
             if (colorOf(clonedGameState[row - i][col - i]) === color) break;
             if (colorOf(clonedGameState[row - i][col - i]) === oppositeColor) {
                 if (i === 1 && clonedGameState[row - i][col - i]?.slice(0, -2) === "king") {
-                    return true;
+                    return [true, "king", clonedGameState[row - i][col - i], [[row - i], [col - i]]];
                 }
                 if (clonedGameState[row - i][col - i]?.slice(0, -2) === "queen" || clonedGameState[row - i][col - i]?.slice(0, -2) === "bishop") {
-                    return true;
+                    return [true, "queen or bishop", clonedGameState[row - i][col - i], [[row - i], [col - i]]];
+                }
+                else {
+                    break;
                 }
                 // validBishopMoves.add(`${fromRow - i}-${fromCol - i}`);
             };
@@ -568,10 +612,13 @@ console.log("why not why")
             if (colorOf(clonedGameState[row + i][col + i]) === color) break;
             if (colorOf(clonedGameState[row + i][col + i]) === oppositeColor) {
                 if (i === 1 && clonedGameState[row + i][col + i]?.slice(0, -2) === "king") {
-                    return true;
+                    return [true, "king", clonedGameState[row + i][col + i], [[row + i], [col + i]]];
                 }
                 if (clonedGameState[row + i][col + i]?.slice(0, -2) === "queen" || clonedGameState[row + i][col + i]?.slice(0, -2) === "bishop") {
-                    return true;
+                    return [true, "queen or bishop", clonedGameState[row + i][col + i], [[row + i], [col + i]]];
+                }
+                else {
+                    break;
                 }
                 // validBishopMoves.add(`${fromRow + i}-${fromCol + i}`);
             };
@@ -586,10 +633,13 @@ console.log("why not why")
             if (colorOf(clonedGameState[row + i][col - i]) === color) break;
             if (colorOf(clonedGameState[row + i][col - i]) === oppositeColor) {
                 if (i === 1 && clonedGameState[row + i][col - i]?.slice(0, -2) === "king") {
-                    return true;
+                    return [true, "king", clonedGameState[row + i][col - i], [[row + i], [col - i]]];
                 }
                 if (clonedGameState[row + i][col - i]?.slice(0, -2) === "queen" || clonedGameState[row + i][col - i]?.slice(0, -2) === "bishop") {
-                    return true;
+                    return [true, "queen or bishop", clonedGameState[row + i][col - i], [[row + i], [col - i]]];
+                }
+                else {
+                    break;
                 }
                 // validBishopMoves.add(`${fromRow + i}-${col - i}`);
             };
@@ -604,10 +654,13 @@ console.log("why not why")
             if (colorOf(clonedGameState[row - i][col + i]) === color) break;
             if (colorOf(clonedGameState[row - i][col + i]) === oppositeColor) {
                 if (i === 1 && clonedGameState[row - i][col + i]?.slice(0, -2) === "king") {
-                    return true;
+                    return [true, "king", clonedGameState[row - i][col + i], [[row - i], [col + i]]];
                 }
                 if (clonedGameState[row - i][col + i]?.slice(0, -2) === "queen" || clonedGameState[row - i][col + i]?.slice(0, -2) === "bishop") {
-                    return true;
+                    return [true, "queen or bishop", clonedGameState[row - i][col + i], [[row - i], [col + i]]];
+                }
+                else {
+                    break;
                 }
                 // validBishopMoves.add(`${fromRow - i}-${fromCol + i}`);
             };
@@ -631,7 +684,7 @@ console.log("why not why")
 
                 if (colorOf(clonedGameState[row - i][col - (2 * l)]) === oppositeColor) {
                     if (clonedGameState[row - i][col - (2 * l)]?.slice(0, -2) === "knight") {
-                        return true;
+                        return [true, "knight", clonedGameState[row - i][col - (2 * l)], [[row - i], [col - (2 * l)]]];
                         // break;
                     }
                     i = -1;
@@ -658,7 +711,7 @@ console.log("why not why")
 
                 if (colorOf(clonedGameState[row - (2 * l)][col - i]) === oppositeColor) {
                     if (clonedGameState[row - (2 * l)][col - i]?.slice(0, -2) === "knight") {
-                        return true;
+                        return [true, "knight", clonedGameState[row - (2 * l)][col - i], [[row - (2 * l)], [col - i]]];
                         // break;
                     }
                     i = -1;
@@ -673,17 +726,17 @@ console.log("why not why")
         }
 
         // check for pawn checks
-        const moveForward = color === "w" ? 1 : -1; // swapped the 1 and -1 because you are checking for the
-        //                                              opposite color pawn checks
+        const moveForward = color === "w" ? -1 : 1; // swapped the 1 and -1 because you are checking for the
+        //                                              opposite color pawn checks // later edit: actually this gave me an error so swapping again
 
-        function leftDiagonal() {
+         {
             if (row + moveForward < 0) return;
             if (row + moveForward > 7) return;
             if (col - 1 < 0) return;
             // if (colorOf(gameState[row + moveForward][col - 1]) === color) return;
             if (colorOf(clonedGameState[row + moveForward][col - 1]) === oppositeColor) {
                 if (clonedGameState[row + moveForward][col - 1]?.slice(0, -2) === "pawn") {
-                    return true;
+                    return [true, "pawn", clonedGameState[row + moveForward][col - 1], [[row + moveForward], [col - 1]]];
                     // break;
                 }
                 // validPawnMoves.add(`${fromRow + moveForward}-${fromCol - 1}`);
@@ -691,28 +744,28 @@ console.log("why not why")
 
         }
 
-        function rightDiagonal() {
+         {
             if (row + moveForward < 0) return;
             if (row + moveForward > 7) return;
             if (col + 1 > 7) return;
             // if (colorOf(gameState[row + moveForward][col + 1]) === color) return;
             if (colorOf(clonedGameState[row + moveForward][col + 1]) === oppositeColor) {
                 if (clonedGameState[row + moveForward][col + 1]?.slice(0, -2) === "pawn") {
-                    return true;
+                    return [true, "pawn", clonedGameState[row + moveForward][col + 1], [[row + moveForward], [col + 1]]];
                     // break;
                 }
                 // validPawnMoves.add(`${fromRow + moveForward}-${fromCol + 1}`);
             };
         }
 
-        leftDiagonal();
-        rightDiagonal();
+        // leftDiagonal();
+        // rightDiagonal();
 
 
 
 
 
-        return false;
+        return [false, "", "", [[99], [99]]];
     }
 
     return (
@@ -748,7 +801,7 @@ console.log("why not why")
                 if (!legalMoves.has(to)) return;
 
                 handleMove(piece, from, to);
-                registerMove(getFirstLetterOf(piece), from, to);
+                registerMove(piece.slice(0, -2), from, to);
                 switchTurns();
             }}
         >
