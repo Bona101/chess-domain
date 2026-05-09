@@ -4,7 +4,7 @@ import { DragDropProvider } from '@dnd-kit/react';
 
 import { useState } from "react";
 import Square from "./Square";
-import type { Piece, WhoseTurn } from '@/types';
+import type { InCheck, Piece, WhoseTurn } from '@/types';
 
 interface BoardProps {
     setMovesPlayed: React.Dispatch<React.SetStateAction<string[][]>>;
@@ -22,6 +22,8 @@ export default function Board({ setMovesPlayed }: BoardProps) {
         ["rook-w", "knight-w", "bishop-w", "queen-w", "king-w", "bishop-w", "knight-w", "rook-w"]
     ];
 
+    let inCheckNonState: InCheck = null;
+
 
     const [whiteKingPosition, setWhiteKingPosition] = useState("7-4");
     const [blackKingPosition, setBlackKingPosition] = useState("0-4");
@@ -29,6 +31,7 @@ export default function Board({ setMovesPlayed }: BoardProps) {
     const [validMoves, setValidMoves] = useState<Set<string>>(new Set());
     const [legalMoves, setLegalMoves] = useState<Set<string>>(new Set());
     const [whoseTurn, setWhoseTurn] = useState<WhoseTurn>("w");
+    const [inCheck, setInCheck] = useState<InCheck>(null);
 
     function handleMove(piece: string, from: string, to: string) {
         if (piece === "king-w") {
@@ -404,6 +407,10 @@ export default function Board({ setMovesPlayed }: BoardProps) {
     }
 
     function convertToChessNotation(piece: string, from: string, to: string) {
+        const [_, fromCol] = from.split("-").map(Number);
+        const [toRow, toCol] = to.split("-").map(Number);
+        const opponentPieceOnLandingSquare = gameState[toRow][toCol];
+
         const files: Record<number, string> = {
             0: "a",
             1: "b",
@@ -419,9 +426,13 @@ export default function Board({ setMovesPlayed }: BoardProps) {
             piece === "pawn" ? "" :
                 piece === "knight" ? "N" : piece.slice(0, 1).toUpperCase();
 
-        const [toRow, toCol] = to.split("-").map(Number);
+        // const [toRow, toCol] = to.split("-").map(Number);
 
-        const move = `${pieceSectionOfMoveNotation}${files[toCol]}${8 - toRow}`;
+        const captures = opponentPieceOnLandingSquare ? piece === "pawn" ? `${files[fromCol]}x` : "x" : "";
+
+        const possibleCheck = inCheckNonState ? "+" : ""; // should i make this to chek if inCHeckNonSTate is actually w or b.
+
+        const move = `${pieceSectionOfMoveNotation}${captures}${files[toCol]}${8 - toRow}${possibleCheck}`;
 
         return move;
     }
@@ -729,7 +740,7 @@ export default function Board({ setMovesPlayed }: BoardProps) {
         const moveForward = color === "w" ? -1 : 1; // swapped the 1 and -1 because you are checking for the
         //                                              opposite color pawn checks // later edit: actually this gave me an error so swapping again
 
-         {
+        {
             if (row + moveForward < 0) return;
             if (row + moveForward > 7) return;
             if (col - 1 < 0) return;
@@ -744,7 +755,7 @@ export default function Board({ setMovesPlayed }: BoardProps) {
 
         }
 
-         {
+        {
             if (row + moveForward < 0) return;
             if (row + moveForward > 7) return;
             if (col + 1 > 7) return;
@@ -766,6 +777,55 @@ export default function Board({ setMovesPlayed }: BoardProps) {
 
 
         return [false, "", "", [[99], [99]]];
+    }
+
+    function checkIfOpponentIsInCheck(from: string, to: string, opponentColor: string) {
+        setInCheck(null);
+        inCheckNonState = null;
+        
+        const [fromRow, fromCol] = from.split("-").map(Number);
+        const [toRow, toCol] = to.split("-").map(Number);
+
+        const copy = gameState.map(row => [...row]);
+
+        const piece = copy[fromRow][fromCol];
+        if (!piece) return; // for the setgame state should this line not be return prev?
+
+        copy[fromRow][fromCol] = null;
+        copy[toRow][toCol] = piece;
+
+        // return copy;
+        console.log("copy")
+        console.log(copy)
+
+        const kingPosition = opponentColor === "w" ? whiteKingPosition : blackKingPosition;
+
+        const opponentKing = "king-" + opponentColor;
+
+        let kingInCheck = checkIfKingIsInCheck(copy, opponentColor, opponentKing, kingPosition);
+console.log(kingInCheck)
+        if (kingInCheck && kingInCheck[0]) {
+            switch (opponentColor) {
+                case "w":
+                    setInCheck("w")
+                    inCheckNonState = "w";
+                    console.log("w in check")
+                    break;
+
+                case "b":
+                    setInCheck("b")
+                    inCheckNonState = "b"
+                    console.log("b in check")
+                    break;
+            
+                default:
+                    setInCheck(null);
+                    inCheckNonState = null;
+                    console.log("null in check")
+                    break;
+            }
+        }
+
     }
 
     return (
@@ -801,8 +861,11 @@ export default function Board({ setMovesPlayed }: BoardProps) {
                 if (!legalMoves.has(to)) return;
 
                 handleMove(piece, from, to);
-                registerMove(piece.slice(0, -2), from, to);
                 switchTurns();
+                
+                const opponentColor = getOppositeColorOf(piece.slice(-1));
+                checkIfOpponentIsInCheck(from, to, opponentColor);
+                registerMove(piece.slice(0, -2), from, to);
             }}
         >
             <div>
@@ -821,6 +884,8 @@ export default function Board({ setMovesPlayed }: BoardProps) {
                                         highlight={legalMoves.has(`${rankIndex}-${colIndex}`)}
                                         whoseTurn={whoseTurn}
                                         handleClick={handleClick}
+                                        inCheck={inCheck}
+
                                     />
                                 );
                             })}
