@@ -2,7 +2,7 @@ import { DragDropProvider } from '@dnd-kit/react';
 // import { Droppable } from './Droppable';
 // import { Draggable } from './Draggable';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Square from "./Square";
 import type { InCheck, Piece, WhoseTurn } from '@/types';
 
@@ -32,6 +32,8 @@ export default function Board({ setMovesPlayed }: BoardProps) {
     const [legalMoves, setLegalMoves] = useState<Set<string>>(new Set());
     const [whoseTurn, setWhoseTurn] = useState<WhoseTurn>("w");
     const [inCheck, setInCheck] = useState<InCheck>(null);
+    const [promoting, setPromoting] = useState<boolean>(false);
+    const [promotionSquare, setPromotionSquare] = useState<string | null>("");
 
     function handleMove(piece: string, from: string, to: string) {
         if (piece === "king-w") {
@@ -51,6 +53,14 @@ export default function Board({ setMovesPlayed }: BoardProps) {
 
             copy[fromRow][fromCol] = null;
             copy[toRow][toCol] = piece;
+
+            if (copy[0].includes("pawn-w")) {
+                setPromoting(true);
+                setPromotionSquare(`0-${copy[0].indexOf("pawn-w")}`)
+            } else if (copy[7].includes("pawn-b")) {
+                setPromoting(true);
+                setPromotionSquare(`7-${copy[7].indexOf("pawn-b")}`) // set promtion square var declaration
+            }
 
             return copy;
         });
@@ -782,7 +792,7 @@ export default function Board({ setMovesPlayed }: BoardProps) {
     function checkIfOpponentIsInCheck(from: string, to: string, opponentColor: string) {
         setInCheck(null);
         inCheckNonState = null;
-        
+
         const [fromRow, fromCol] = from.split("-").map(Number);
         const [toRow, toCol] = to.split("-").map(Number);
 
@@ -803,7 +813,7 @@ export default function Board({ setMovesPlayed }: BoardProps) {
         const opponentKing = "king-" + opponentColor;
 
         let kingInCheck = checkIfKingIsInCheck(copy, opponentColor, opponentKing, kingPosition);
-console.log(kingInCheck)
+        console.log(kingInCheck)
         if (kingInCheck && kingInCheck[0]) {
             switch (opponentColor) {
                 case "w":
@@ -817,7 +827,7 @@ console.log(kingInCheck)
                     inCheckNonState = "b"
                     console.log("b in check")
                     break;
-            
+
                 default:
                     setInCheck(null);
                     inCheckNonState = null;
@@ -827,6 +837,23 @@ console.log(kingInCheck)
         }
 
     }
+
+    function setPromotedTo(piece: Piece, squareId: string) {
+        const [squareRow, squareCol] = squareId.split("-").map(Number);
+         setGameState((prev) => {
+            const copy = prev.map(row => [...row]);
+
+
+           
+            copy[squareRow][squareCol] = piece;
+
+            
+
+            return copy;
+        });
+
+    }
+
 
     return (
         <DragDropProvider
@@ -862,7 +889,7 @@ console.log(kingInCheck)
 
                 handleMove(piece, from, to);
                 switchTurns();
-                
+
                 const opponentColor = getOppositeColorOf(piece.slice(-1));
                 checkIfOpponentIsInCheck(from, to, opponentColor);
                 registerMove(piece.slice(0, -2), from, to);
@@ -885,7 +912,11 @@ console.log(kingInCheck)
                                         whoseTurn={whoseTurn}
                                         handleClick={handleClick}
                                         inCheck={inCheck}
-
+                                        promoting={promoting}
+                                        setPromoting={setPromoting}
+                                        promotionSquare={promotionSquare}
+                                        setPromotionSquare={setPromotionSquare}
+                                        setPromotedTo={setPromotedTo}
                                     />
                                 );
                             })}
@@ -895,4 +926,4 @@ console.log(kingInCheck)
             </div>
         </DragDropProvider>
     );
-}
+}    

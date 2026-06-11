@@ -10,9 +10,14 @@ interface SquareProps {
     whoseTurn: WhoseTurn;
     handleClick: (id: string, piece: Piece) => void;
     inCheck: InCheck;
+    promoting: boolean;
+    setPromoting: React.Dispatch<React.SetStateAction<boolean>>;
+    promotionSquare: string | null;
+    setPromotionSquare: React.Dispatch<React.SetStateAction<string | null>>;
+    setPromotedTo: (piece: Piece, squareId: string) => void;
 }
 
-export default function Square({ id, shade, piece, highlight, whoseTurn, handleClick, inCheck }: SquareProps) {
+export default function Square({ id, shade, piece, highlight, whoseTurn, handleClick, inCheck, promoting, setPromoting, promotionSquare, setPromotionSquare, setPromotedTo }: SquareProps) {
     const { ref: dropRef } = useDroppable({ id });
 
     const { ref: dragRef } = useDraggable({
@@ -20,12 +25,41 @@ export default function Square({ id, shade, piece, highlight, whoseTurn, handleC
         disabled: !piece || whoseTurn !== piece.slice(-1),
     });
 
+    const possiblePromotionsForWhite: Piece[] = ["queen-w", "rook-w", "bishop-w", "knight-w"];
+    const possiblePromotionsForBlack: Piece[] = ["queen-b", "rook-b", "bishop-b", "knight-b"];
+
     return (
         <div
             ref={dropRef}
             className={`${shade === "light" ? "bg-green-300" : "bg-green-500"} w-[40px] h-[40px] relative flex items-center justify-center`}
             onClick={() => handleClick(id, piece)}
         >
+            {(promoting && id === promotionSquare) &&
+                <div className={`flex relative ${id.slice(0) === "0" ? "top-10" : "bottom-10"} bg-blue-500 z-10`}>
+                    {piece?.slice(-1) === "w" ?
+                        possiblePromotionsForWhite.map(i => (
+                            <div className='border w-8' onClick={() => {
+                                setPromoting(false);
+                                setPromotionSquare("");
+                                setPromotedTo(i, id);
+                            }}>
+                                {/* <p>what now</p> */}
+                                <img src={`/src/assets/pieces-svg/${i}.svg`} alt={`${i}`} />
+                            </div>
+                        )) :
+                        possiblePromotionsForBlack.map(i => (
+                            <div className='border w-8' onClick={() => {
+                                setPromoting(false);
+                                setPromotionSquare("");
+                                setPromotedTo(i, id);
+                            }}>
+                                {/* <p>what now</p> */}
+                                <img src={`/src/assets/pieces-svg/${i}.svg`} alt={`${i}`} />
+                            </div>
+                        ))
+                    }
+                </div>
+            }
             {piece ? (
                 <div ref={whoseTurn === piece.slice(-1) ? dragRef : undefined} className='flex items-center justify-center'>
                     <img src={`/src/assets/pieces-svg/${piece}.svg`} alt={`${piece}`} />
