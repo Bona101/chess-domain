@@ -34,6 +34,7 @@ export default function Board({ setMovesPlayed }: BoardProps) {
     const [inCheck, setInCheck] = useState<InCheck>(null);
     const [promoting, setPromoting] = useState<boolean>(false);
     const [promotionSquare, setPromotionSquare] = useState<string | null>("");
+    const [promotingFrom, setPromotingFrom] = useState<string>("");
 
     function handleMove(piece: string, from: string, to: string) {
         if (piece === "king-w") {
@@ -57,6 +58,7 @@ export default function Board({ setMovesPlayed }: BoardProps) {
             if (copy[0].includes("pawn-w")) {
                 setPromoting(true);
                 setPromotionSquare(`0-${copy[0].indexOf("pawn-w")}`)
+                setPromotingFrom(`${fromRow}-${fromCol}`);
             } else if (copy[7].includes("pawn-b")) {
                 setPromoting(true);
                 setPromotionSquare(`7-${copy[7].indexOf("pawn-b")}`) // set promtion square var declaration
@@ -789,7 +791,7 @@ export default function Board({ setMovesPlayed }: BoardProps) {
         return [false, "", "", [[99], [99]]];
     }
 
-    function checkIfOpponentIsInCheck(from: string, to: string, opponentColor: string) {
+    function checkIfOpponentIsInCheck(from: string, to: string, opponentColor: string, piece: Piece | undefined = undefined) { // the piece here when provided is when a pawn promotes
         setInCheck(null);
         inCheckNonState = null;
 
@@ -798,11 +800,17 @@ export default function Board({ setMovesPlayed }: BoardProps) {
 
         const copy = gameState.map(row => [...row]);
 
-        const piece = copy[fromRow][fromCol];
+        if (!piece) {
+              const piece = copy[fromRow][fromCol];
         if (!piece) return; // for the setgame state should this line not be return prev?
 
         copy[fromRow][fromCol] = null;
         copy[toRow][toCol] = piece;
+        } else {
+            copy[fromRow][fromCol] = null;
+            copy[toRow][toCol] = piece;
+        }
+
 
         // return copy;
         console.log("copy")
@@ -851,6 +859,14 @@ export default function Board({ setMovesPlayed }: BoardProps) {
 
             return copy;
         });
+
+        if (!piece) return;
+
+        const opponentColor = getOppositeColorOf(piece.slice(-1));
+
+        checkIfOpponentIsInCheck(promotingFrom, squareId, opponentColor, piece)
+
+        setPromotingFrom("");
 
     }
 
