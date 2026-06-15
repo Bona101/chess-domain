@@ -11,15 +11,17 @@ interface BoardProps {
 }
 
 export default function Board({ setMovesPlayed }: BoardProps) {
-    const INITIAL_GAMESTATE: Piece[][] = [
-        ["rook-b", "knight-b", "bishop-b", "queen-b", "king-b", "bishop-b", "knight-b", "rook-b"],
-        Array.from({ length: 8 }, () => "pawn-b"),
-        Array.from({ length: 8 }, () => null),
-        Array.from({ length: 8 }, () => null),
-        Array.from({ length: 8 }, () => null),
-        Array.from({ length: 8 }, () => null),
-        Array.from({ length: 8 }, () => "pawn-w"),
-        ["rook-w", "knight-w", "bishop-w", "queen-w", "king-w", "bishop-w", "knight-w", "rook-w"]
+    const GAMESTATES: Piece[][][] = [
+        [
+            ["rook-b", "knight-b", "bishop-b", "queen-b", "king-b", "bishop-b", "knight-b", "rook-b"],
+            Array.from({ length: 8 }, () => "pawn-b"),
+            Array.from({ length: 8 }, () => null),
+            Array.from({ length: 8 }, () => null),
+            Array.from({ length: 8 }, () => null),
+            Array.from({ length: 8 }, () => null),
+            Array.from({ length: 8 }, () => "pawn-w"),
+            ["rook-w", "knight-w", "bishop-w", "queen-w", "king-w", "bishop-w", "knight-w", "rook-w"]
+        ]
     ];
 
     let inCheckNonState: InCheck = null;
@@ -27,7 +29,7 @@ export default function Board({ setMovesPlayed }: BoardProps) {
 
     const [whiteKingPosition, setWhiteKingPosition] = useState("7-4");
     const [blackKingPosition, setBlackKingPosition] = useState("0-4");
-    const [gameState, setGameState] = useState(INITIAL_GAMESTATE);
+    const [gameState, setGameState] = useState(GAMESTATES[0]);
     const [validMoves, setValidMoves] = useState<Set<string>>(new Set());
     const [legalMoves, setLegalMoves] = useState<Set<string>>(new Set());
     const [whoseTurn, setWhoseTurn] = useState<WhoseTurn>("w");
@@ -55,14 +57,7 @@ export default function Board({ setMovesPlayed }: BoardProps) {
             copy[fromRow][fromCol] = null;
             copy[toRow][toCol] = piece;
 
-            if (copy[0].includes("pawn-w")) {
-                setPromoting(true);
-                setPromotionSquare(`0-${copy[0].indexOf("pawn-w")}`)
-                setPromotingFrom(`${fromRow}-${fromCol}`);
-            } else if (copy[7].includes("pawn-b")) {
-                setPromoting(true);
-                setPromotionSquare(`7-${copy[7].indexOf("pawn-b")}`) // set promtion square var declaration
-            }
+            GAMESTATES.push(copy);
 
             return copy;
         });
@@ -418,10 +413,13 @@ export default function Board({ setMovesPlayed }: BoardProps) {
         setLegalMoves(() => new Set())
     }
 
-    function convertToChessNotation(piece: string, from: string, to: string) {
+    function convertToChessNotation(piece: string, from: string, to: string, isPromoting: boolean) {
         const [_, fromCol] = from.split("-").map(Number);
         const [toRow, toCol] = to.split("-").map(Number);
         const opponentPieceOnLandingSquare = gameState[toRow][toCol];
+        console.log(gameState)
+        console.log("opponentPieceOnLandingSquare")
+        console.log(opponentPieceOnLandingSquare)
 
         const files: Record<number, string> = {
             0: "a",
@@ -444,12 +442,30 @@ export default function Board({ setMovesPlayed }: BoardProps) {
 
         const possibleCheck = inCheckNonState ? "+" : ""; // should i make this to chek if inCHeckNonSTate is actually w or b.
 
-        const move = `${pieceSectionOfMoveNotation}${captures}${files[toCol]}${8 - toRow}${possibleCheck}`;
+        let move = `${pieceSectionOfMoveNotation}${captures}${files[toCol]}${8 - toRow}${possibleCheck}`;
 
+        if (isPromoting) {
+            if (move.slice(-1) === "+" && move.includes("x")) {
+                // example: Qxd8+
+                move = `${files[fromCol]}${move.slice(1, -1)}=${move.slice(0, 1)}+`
+            } else if (move.slice(-1) === "+") {
+                // example: Qd8+
+                move = `${move.slice(1, -1)}=${move.slice(0, 1)}+`
+            } else if (move.includes("x")) {
+                // example: Qxd8
+                move = `${files[fromCol]}${move.slice(1)}=${move.slice(0, 1)}`
+            } else {
+                // example: Qd8
+                move = `${move.slice(1)}=${move.slice(0, 1)}`
+            }
+
+        }
+        console.log("move see o")
+        console.log(move)
         return move;
     }
-    function registerMove(piece: string, from: string, to: string) {
-        const move = convertToChessNotation(piece, from, to)
+    function registerMove(piece: string, from: string, to: string, isPromoting: boolean = false) {
+        const move = convertToChessNotation(piece, from, to, isPromoting)
         setMovesPlayed((prev) => {
             let curr = [...prev];
 
@@ -801,11 +817,11 @@ export default function Board({ setMovesPlayed }: BoardProps) {
         const copy = gameState.map(row => [...row]);
 
         if (!piece) {
-              const piece = copy[fromRow][fromCol];
-        if (!piece) return; // for the setgame state should this line not be return prev?
+            const piece = copy[fromRow][fromCol];
+            if (!piece) return; // for the setgame state should this line not be return prev?
 
-        copy[fromRow][fromCol] = null;
-        copy[toRow][toCol] = piece;
+            copy[fromRow][fromCol] = null;
+            copy[toRow][toCol] = piece;
         } else {
             copy[fromRow][fromCol] = null;
             copy[toRow][toCol] = piece;
@@ -847,24 +863,41 @@ export default function Board({ setMovesPlayed }: BoardProps) {
     }
 
     function setPromotedTo(piece: Piece, squareId: string) {
+        console.log("promotingFrom here")
+        console.log(promotingFrom)
+        const [fromRow, fromCol] = promotingFrom.split("-").map(Number);
         const [squareRow, squareCol] = squareId.split("-").map(Number);
-         setGameState((prev) => {
+        setGameState((prev) => {
             const copy = prev.map(row => [...row]);
 
 
-           
+            copy[fromRow][fromCol] = null;
             copy[squareRow][squareCol] = piece;
 
-            
+            // if (piece?.slice(-1) === "w") {
+            //     // setPromoting(true);
+            //     // setPromotionSquare(`0-${copy[0].indexOf("pawn-w")}`)
+            //     // promotingFrom = `${fromRow}-${fromCol}`;
+            // } else if (piece?.slice(-1) === "b") {
+            //     // setPromoting(true);
+            //     // setPromotionSquare(`7-${copy[7].indexOf("pawn-b")}`) // set promtion square var declaration
+            //     // promotingFrom = `${fromRow}-${fromCol}`;
+            // }
+            GAMESTATES.push(copy);
 
             return copy;
         });
 
         if (!piece) return;
+        // line 873 and below. youre essentailly trying to make it such that the move notation of promoting is correct
+        // handleMove(piece, promotingFrom, squareId);
+        switchTurns();
 
         const opponentColor = getOppositeColorOf(piece.slice(-1));
 
         checkIfOpponentIsInCheck(promotingFrom, squareId, opponentColor, piece)
+
+        registerMove(piece.slice(0, -2), promotingFrom, squareId, true);
 
         setPromotingFrom("");
 
@@ -903,12 +936,20 @@ export default function Board({ setMovesPlayed }: BoardProps) {
                 cancelHighlights();
                 if (!legalMoves.has(to)) return;
 
-                handleMove(piece, from, to);
-                switchTurns();
+                if (!((piece === "pawn-w" && fromRow === 1) || (piece === "pawn-b" && fromRow === 6))) {
+                    handleMove(piece, from, to);
+                    switchTurns();
 
-                const opponentColor = getOppositeColorOf(piece.slice(-1));
-                checkIfOpponentIsInCheck(from, to, opponentColor);
-                registerMove(piece.slice(0, -2), from, to);
+                    const opponentColor = getOppositeColorOf(piece.slice(-1));
+                    checkIfOpponentIsInCheck(from, to, opponentColor);
+                    registerMove(piece.slice(0, -2), from, to);
+                } else {
+                    setPromoting(true);
+                    setPromotionSquare(to);
+                    // promotingFrom = from; // why does this not work for if it is a state variable.
+                    //                       it was not working like this so i changed teh variable to a state variable
+                    setPromotingFrom(from);
+                }
             }}
         >
             <div>

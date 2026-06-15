@@ -36,7 +36,7 @@ export default function Square({ id, shade, piece, highlight, whoseTurn, handleC
         >
             {(promoting && id === promotionSquare) &&
                 <div className={`flex relative ${id.slice(0) === "0" ? "top-10" : "bottom-10"} bg-blue-500 z-10`}>
-                    {piece?.slice(-1) === "w" ?
+                    {promotionSquare.slice(0, 1) === "0" ?
                         possiblePromotionsForWhite.map(i => (
                             <div className='border w-8' onClick={() => {
                                 setPromoting(false);
