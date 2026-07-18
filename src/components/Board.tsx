@@ -11,7 +11,9 @@ interface BoardProps {
 }
 
 export default function Board({ setMovesPlayed }: BoardProps) {
-    const GAMESTATES: Piece[][][] = [
+    const [indexOfCurrentGameState, setIndexOfCurrentGameState] = useState(0);
+
+    const [allGameStates, setAllGameStates] = useState<Piece[][][]>([
         [
             ["rook-b", "knight-b", "bishop-b", "queen-b", "king-b", "bishop-b", "knight-b", "rook-b"],
             Array.from({ length: 8 }, () => "pawn-b"),
@@ -22,14 +24,14 @@ export default function Board({ setMovesPlayed }: BoardProps) {
             Array.from({ length: 8 }, () => "pawn-w"),
             ["rook-w", "knight-w", "bishop-w", "queen-w", "king-w", "bishop-w", "knight-w", "rook-w"]
         ]
-    ];
+    ]);
 
     let inCheckNonState: InCheck = null;
 
 
     const [whiteKingPosition, setWhiteKingPosition] = useState("7-4");
     const [blackKingPosition, setBlackKingPosition] = useState("0-4");
-    const [gameState, setGameState] = useState(GAMESTATES[0]);
+    const [gameState, setGameState] = useState(allGameStates[0]);
     const [validMoves, setValidMoves] = useState<Set<string>>(new Set());
     const [legalMoves, setLegalMoves] = useState<Set<string>>(new Set());
     const [whoseTurn, setWhoseTurn] = useState<WhoseTurn>("w");
@@ -48,19 +50,44 @@ export default function Board({ setMovesPlayed }: BoardProps) {
         const [fromRow, fromCol] = from.split("-").map(Number);
         const [toRow, toCol] = to.split("-").map(Number);
 
+        // let newGameState: Piece[][] = [];
+
+        // indexOfCurrentGameState = allGameStates.length + 1;
+        setIndexOfCurrentGameState(() => allGameStates.length);
+
+        const newGameState = gameState.map(row => [...row]);
+
+        const piec = newGameState[fromRow][fromCol];
+
+
+        newGameState[fromRow][fromCol] = null;
+        newGameState[toRow][toCol] = piec;
+
+        // newGameState = copy.map(row => [...row]);
+
         setGameState((prev) => {
-            const copy = prev.map(row => [...row]);
+            // const copy = prev.map(row => [...row]);
 
-            const piece = copy[fromRow][fromCol];
-            if (!piece) return prev;
+            // const piece = copy[fromRow][fromCol];
+            // if (!piece) return prev;
 
-            copy[fromRow][fromCol] = null;
-            copy[toRow][toCol] = piece;
+            // copy[fromRow][fromCol] = null;
+            // copy[toRow][toCol] = piece;
 
-            GAMESTATES.push(copy);
+            // newGameState = copy.map(row => [...row]);
+            // 
+            // GAMESTATES.push(copy);
 
-            return copy;
+
+            if (!piec) return prev;
+            return newGameState.map(row => [...row]);
         });
+
+        setAllGameStates((prev) => {
+            const copy = prev.map(gameState => gameState.map(row => [...row]));
+            return [...copy, newGameState.map(i => [...i])]
+        })
+
     }
 
     function calculateValidMoves(generalizedPiece: string, from: string, color: string) {
@@ -867,26 +894,68 @@ export default function Board({ setMovesPlayed }: BoardProps) {
         console.log(promotingFrom)
         const [fromRow, fromCol] = promotingFrom.split("-").map(Number);
         const [squareRow, squareCol] = squareId.split("-").map(Number);
+
+        // let newGameState: Piece[][] = [];
+
+        // indexOfCurrentGameState = allGameStates.length + 1;
+        setIndexOfCurrentGameState(() => allGameStates.length);
+
+         const newGameState = gameState.map(row => [...row]);
+
+        const piec = newGameState[fromRow][fromCol];
+
+
+        newGameState[fromRow][fromCol] = null;
+        newGameState[squareRow][squareCol] = piec;
+
+        // newGameState = copy.map(row => [...row]);
+
         setGameState((prev) => {
-            const copy = prev.map(row => [...row]);
+            // const copy = prev.map(row => [...row]);
+
+            // const piece = copy[fromRow][fromCol];
+            // if (!piece) return prev;
+
+            // copy[fromRow][fromCol] = null;
+            // copy[toRow][toCol] = piece;
+
+            // newGameState = copy.map(row => [...row]);
+            // 
+            // GAMESTATES.push(copy);
 
 
-            copy[fromRow][fromCol] = null;
-            copy[squareRow][squareCol] = piece;
-
-            // if (piece?.slice(-1) === "w") {
-            //     // setPromoting(true);
-            //     // setPromotionSquare(`0-${copy[0].indexOf("pawn-w")}`)
-            //     // promotingFrom = `${fromRow}-${fromCol}`;
-            // } else if (piece?.slice(-1) === "b") {
-            //     // setPromoting(true);
-            //     // setPromotionSquare(`7-${copy[7].indexOf("pawn-b")}`) // set promtion square var declaration
-            //     // promotingFrom = `${fromRow}-${fromCol}`;
-            // }
-            GAMESTATES.push(copy);
-
-            return copy;
+            if (!piec) return prev;
+            return newGameState.map(row => [...row]);
         });
+
+
+        // setGameState((prev) => {
+        //     const copy = prev.map(row => [...row]);
+
+
+        //     copy[fromRow][fromCol] = null;
+        //     copy[squareRow][squareCol] = piece;
+
+        //     newGameState = copy.map(row => [...row]);
+
+        //     // if (piece?.slice(-1) === "w") {
+        //     //     // setPromoting(true);
+        //     //     // setPromotionSquare(`0-${copy[0].indexOf("pawn-w")}`)
+        //     //     // promotingFrom = `${fromRow}-${fromCol}`;
+        //     // } else if (piece?.slice(-1) === "b") {
+        //     //     // setPromoting(true);
+        //     //     // setPromotionSquare(`7-${copy[7].indexOf("pawn-b")}`) // set promtion square var declaration
+        //     //     // promotingFrom = `${fromRow}-${fromCol}`;
+        //     // }
+        //     // GAMESTATES.push(copy);
+
+        //     return copy;
+        // });
+
+        setAllGameStates((prev) => {
+            const copy = prev.map(gameState => gameState.map(row => [...row]));
+            return [...copy, newGameState.map(i => [...i])]
+        })
 
         if (!piece) return;
         // line 873 and below. youre essentailly trying to make it such that the move notation of promoting is correct
@@ -903,10 +972,28 @@ export default function Board({ setMovesPlayed }: BoardProps) {
 
     }
 
+    function showPrevOrNextGameState(num: number) {
+
+
+        setCurrentGameState(indexOfCurrentGameState + num)
+
+
+        console.log(allGameStates)
+    }
+
+    function setCurrentGameState(num: number) {
+        if (num < 0 || num >= allGameStates.length) return;
+        // indexOfCurrentGameState = num;
+        setIndexOfCurrentGameState(() => num);
+        setGameState(() => allGameStates[num].map(i => [...i]))
+    }
+
 
     return (
         <DragDropProvider
             onDragStart={(event) => {
+                if (indexOfCurrentGameState !== allGameStates.length - 1) return;
+
                 const from = event.operation.source?.id;
                 if (typeof from !== "string") return;
 
@@ -980,6 +1067,10 @@ export default function Board({ setMovesPlayed }: BoardProps) {
                         </div>
                     ))
                 }
+                <div className='flex justify-between mt-3'>
+                    <button className="bg-[#5196EB] p-2 rounded-sm w-[8rem] cursor-pointer" onClick={() => showPrevOrNextGameState(-1)}>Prev</button>
+                    <button className="bg-[#5196EB] p-2 rounded-sm w-[8rem] cursor-pointer" onClick={() => showPrevOrNextGameState(1)}>Next</button>
+                </div>
             </div>
         </DragDropProvider>
     );

@@ -42,36 +42,34 @@ export default function PlayOpponent({
 
                         <div className="flex gap-5">
 
-                            <button className="bg-[#5196EB] mb-5 p-2 rounded-sm w-[8rem] cursor-pointer" onClick={() => setCurrentGameState(-1)}>Prev</button>
-                        <button className="bg-[#5196EB] mb-5 p-2 rounded-sm w-[8rem] cursor-pointer" onClick={() => setCurrentGameState(1)}>Next</button>
+                            
+                        </div>
+                    </div>
+                </div>
 
+                <div className="w-1/4 flex justify-center items-center">
+                    <div className="p-3 bg-black">
+                        {movesPlayed.map((move, index) => (
+                            <div className="flex gap-1">
+                                <p className="text-white">
+                                    {index + 1}.
+                                </p>
+                                <div className="flex gap-1">
+                                    <p className="bg-green-300 text-white mb-1 w-[7rem]">
+                                        {move[0]}
+                                    </p>
+                                    {
+                                        move.length >= 2 &&
+                                        <p className="bg-green-300 text-white mb-1 w-[7rem]">
+                                            {move[1]}
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
-
-            <div className="w-1/4 flex justify-center items-center">
-                <div className="p-3 bg-black">
-                    {movesPlayed.map((move, index) => (
-                        <div className="flex gap-1">
-                            <p className="text-white">
-                                {index + 1}.
-                            </p>
-                            <div className="flex gap-1">
-                                <p className="bg-green-300 text-white mb-1 w-[7rem]">
-                                    {move[0]}
-                                </p>
-                                {
-                                    move.length >= 2 &&
-                                    <p className="bg-green-300 text-white mb-1 w-[7rem]">
-                                        {move[1]}
-                                    </p>
-                                }
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
         </div >
     );
 }
