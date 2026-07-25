@@ -1,12 +1,18 @@
-import { useState } from "react";
-import Board from "./Board";
+import { useRef, useState } from "react";
+import Board, { type BoardHandle } from "./Board";
 
 export default function PlayOpponent({
-    opponent
+    opponent,
 }: {
     opponent: string;
 }) {
     const [movesPlayed, setMovesPlayed] = useState<string[][]>([]);
+    const boardRef = useRef<BoardHandle>(null);
+
+
+    function goToChessPosition(moveRowIndex: number, moveSubIndex: number) {
+        boardRef.current?.goToMove(moveRowIndex, moveSubIndex);
+    }
 
 
     return (
@@ -28,7 +34,7 @@ export default function PlayOpponent({
                             </div>
                         </div>
 
-                        <Board setMovesPlayed={setMovesPlayed} />
+                        <Board ref={boardRef} setMovesPlayed={setMovesPlayed} />
 
                         <div className="flex items-center gap-3 w-[60%] my-3">
                             <div className="bg-gray-500 rounded-full w-7 h-7">
@@ -50,17 +56,17 @@ export default function PlayOpponent({
                 <div className="w-1/4 flex justify-center items-center">
                     <div className="p-3 bg-black">
                         {movesPlayed.map((move, index) => (
-                            <div className="flex gap-1">
+                            <div className="flex gap-1" key={index}>
                                 <p className="text-white">
                                     {index + 1}.
                                 </p>
                                 <div className="flex gap-1">
-                                    <p className="bg-green-300 text-white mb-1 w-[7rem]">
+                                    <p className="bg-green-300 text-white mb-1 w-[7rem] cursor-pointer" onClick={() => goToChessPosition(index, 0)}>
                                         {move[0]}
                                     </p>
                                     {
                                         move.length >= 2 &&
-                                        <p className="bg-green-300 text-white mb-1 w-[7rem]">
+                                        <p className="bg-green-300 text-white mb-1 w-[7rem] cursor-pointer" onClick={() => goToChessPosition(index, 1)}>
                                             {move[1]}
                                         </p>
                                     }

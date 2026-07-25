@@ -1,8 +1,8 @@
+import { forwardRef, useImperativeHandle, useState } from "react";
 import { DragDropProvider } from '@dnd-kit/react';
 // import { Droppable } from './Droppable';
 // import { Draggable } from './Draggable';
 
-import { useEffect, useState } from "react";
 import Square from "./Square";
 import type { InCheck, Piece, WhoseTurn } from '@/types';
 
@@ -10,7 +10,12 @@ interface BoardProps {
     setMovesPlayed: React.Dispatch<React.SetStateAction<string[][]>>;
 }
 
-export default function Board({ setMovesPlayed }: BoardProps) {
+export interface BoardHandle {
+    goToMove: (moveRowIndex: number, moveSubIndex: number) => void;
+}
+
+// export default function Board({ setMovesPlayed }: BoardProps) {
+    const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed }, ref) => {
     const [indexOfCurrentGameState, setIndexOfCurrentGameState] = useState(0);
 
     const [allGameStates, setAllGameStates] = useState<Piece[][][]>([
@@ -988,6 +993,15 @@ export default function Board({ setMovesPlayed }: BoardProps) {
         setGameState(() => allGameStates[num].map(i => [...i]))
     }
 
+    useImperativeHandle(ref, () => ({
+        goToMove: (moveRowIndex: number, moveSubIndex: number) => {
+            // allGameStates[0] is the initial position, so every move played
+            // pushes exactly one new state onto allGameStates.
+            const stateIndex = moveRowIndex * 2 + moveSubIndex + 1;
+            setCurrentGameState(stateIndex);
+        }
+    }));
+
 
     return (
         <DragDropProvider
@@ -1068,10 +1082,13 @@ export default function Board({ setMovesPlayed }: BoardProps) {
                     ))
                 }
                 <div className='flex justify-between mt-3'>
-                    <button className="bg-[#5196EB] p-2 rounded-sm w-[8rem] cursor-pointer" onClick={() => showPrevOrNextGameState(-1)}>Prev</button>
-                    <button className="bg-[#5196EB] p-2 rounded-sm w-[8rem] cursor-pointer" onClick={() => showPrevOrNextGameState(1)}>Next</button>
+                    <button className="bg-[#5196EB] p-2 rounded-sm w-[8rem] cursor-pointer" onClick={() => setCurrentGameState(indexOfCurrentGameState - 1)}>Prev</button>
+                    <button className="bg-[#5196EB] p-2 rounded-sm w-[8rem] cursor-pointer" onClick={() => setCurrentGameState(indexOfCurrentGameState + 1)}>Next</button>
                 </div>
             </div>
         </DragDropProvider>
     );
-}    
+});   
+
+export default Board;
+
