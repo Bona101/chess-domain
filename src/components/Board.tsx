@@ -1,5 +1,6 @@
-import { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { DragDropProvider } from '@dnd-kit/react';
+import { type Mode } from "@/types";
 // import { Droppable } from './Droppable';
 // import { Draggable } from './Draggable';
 
@@ -8,6 +9,7 @@ import type { InCheck, Piece, WhoseTurn } from '@/types';
 
 interface BoardProps {
     setMovesPlayed: React.Dispatch<React.SetStateAction<string[][]>>;
+    mode: Mode;
 }
 
 export interface BoardHandle {
@@ -15,10 +17,19 @@ export interface BoardHandle {
 }
 
 // export default function Board({ setMovesPlayed }: BoardProps) {
-    const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed }, ref) => {
+const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref) => {
+    let posEvaluations: Record<string, number> = {};
+    let calcGameState: Piece[][] = [];
+
     const [indexOfCurrentGameState, setIndexOfCurrentGameState] = useState(0);
 
-    const [allGameStates, setAllGameStates] = useState<Piece[][][]>([
+    const [myColor, setMyColor] = useState<string>(Math.random() < 0.5 ? "w" : "b");
+    const [computerTurn, setComputerTurn] = useState<boolean>(false);
+
+
+    // const [calcGameState, setCalcGameState] = useState<Piece[][]>([]);
+    const [allCalcGameStates, setAllCalcGameStates] = useState<Piece[][][]>([]);
+    const [allGameStates, setAllGameStates] = useState<Piece[][][]>(myColor === "w" ? [
         [
             ["rook-b", "knight-b", "bishop-b", "queen-b", "king-b", "bishop-b", "knight-b", "rook-b"],
             Array.from({ length: 8 }, () => "pawn-b"),
@@ -29,7 +40,20 @@ export interface BoardHandle {
             Array.from({ length: 8 }, () => "pawn-w"),
             ["rook-w", "knight-w", "bishop-w", "queen-w", "king-w", "bishop-w", "knight-w", "rook-w"]
         ]
-    ]);
+    ]
+        :
+        [
+            [
+                ["rook-w", "knight-w", "bishop-w", "king-w", "queen-w", "bishop-w", "knight-w", "rook-w"],
+                Array.from({ length: 8 }, () => "pawn-w"),
+                Array.from({ length: 8 }, () => null),
+                Array.from({ length: 8 }, () => null),
+                Array.from({ length: 8 }, () => null),
+                Array.from({ length: 8 }, () => null),
+                Array.from({ length: 8 }, () => "pawn-b"),
+                ["rook-b", "knight-b", "bishop-b", "king-b", "queen-b", "bishop-b", "knight-b", "rook-b"]
+            ]
+        ]);
 
     let inCheckNonState: InCheck = null;
 
@@ -37,7 +61,7 @@ export interface BoardHandle {
     const [whiteKingPosition, setWhiteKingPosition] = useState("7-4");
     const [blackKingPosition, setBlackKingPosition] = useState("0-4");
     const [gameState, setGameState] = useState(allGameStates[0]);
-    const [validMoves, setValidMoves] = useState<Set<string>>(new Set());
+    // const [validMoves, setValidMoves] = useState<Set<string>>(new Set());
     const [legalMoves, setLegalMoves] = useState<Set<string>>(new Set());
     const [whoseTurn, setWhoseTurn] = useState<WhoseTurn>("w");
     const [inCheck, setInCheck] = useState<InCheck>(null);
@@ -95,6 +119,64 @@ export interface BoardHandle {
 
     }
 
+    function handleCalcMove(piece: string, from: string, to: string) {
+        let calcWhiteKingPosition = null;
+        let calcBlackKingPosition = null;
+        if (piece === "king-w") {
+            setWhiteKingPosition(to);
+            calcWhiteKingPosition = to;
+        } else if (piece === "king-b") {
+            // setBlackKingPosition(to);
+            calcBlackKingPosition = to;
+        }
+
+        const [fromRow, fromCol] = from.split("-").map(Number);
+        const [toRow, toCol] = to.split("-").map(Number);
+
+        // let newGameState: Piece[][] = [];
+
+        // indexOfCurrentGameState = allGameStates.length + 1;
+        // setIndexOfCurrentGameState(() => allGameStates.length);
+
+        const newGameState = gameState.map(row => [...row]);
+
+        const piec = newGameState[fromRow][fromCol];
+
+
+        newGameState[fromRow][fromCol] = null;
+        newGameState[toRow][toCol] = piec;
+
+        // newGameState = copy.map(row => [...row]);
+
+        // setCalcGameState((prev) => {
+        //     // const copy = prev.map(row => [...row]);
+
+        //     // const piece = copy[fromRow][fromCol];
+        //     // if (!piece) return prev;
+
+        //     // copy[fromRow][fromCol] = null;
+        //     // copy[toRow][toCol] = piece;
+
+        //     // newGameState = copy.map(row => [...row]);
+        //     // 
+        //     // GAMESTATES.push(copy);
+
+
+        //     if (!piec) return prev;
+        //     return newGameState.map(row => [...row]);
+        // });
+
+        calcGameState = newGameState.map(row => [...row]);
+
+        setAllCalcGameStates((prev) => {
+            const copy = prev.map(gameState => gameState.map(row => [...row]));
+            return [...copy, newGameState.map(i => [...i])]
+        })
+
+
+
+    }
+
     function calculateValidMoves(generalizedPiece: string, from: string, color: string) {
         let calculatedValidMoves = new Set<string>();
         switch (generalizedPiece) {
@@ -118,7 +200,6 @@ export interface BoardHandle {
                 break;
         }
 
-        setValidMoves(() => new Set(calculatedValidMoves))
         return new Set(calculatedValidMoves);
     }
 
@@ -441,7 +522,6 @@ export interface BoardHandle {
     }
 
     function cancelHighlights() {
-        setValidMoves(() => new Set())
         setLegalMoves(() => new Set())
     }
 
@@ -453,16 +533,27 @@ export interface BoardHandle {
         console.log("opponentPieceOnLandingSquare")
         console.log(opponentPieceOnLandingSquare)
 
-        const files: Record<number, string> = {
-            0: "a",
-            1: "b",
-            2: "c",
-            3: "d",
-            4: "e",
-            5: "f",
-            6: "g",
-            7: "h",
-        }
+        const files: Record<number, string> = myColor === "w" ?
+            {
+                0: "a",
+                1: "b",
+                2: "c",
+                3: "d",
+                4: "e",
+                5: "f",
+                6: "g",
+                7: "h",
+            } :
+            {
+                0: "h",
+                1: "g",
+                2: "f",
+                3: "e",
+                4: "d",
+                5: "c",
+                6: "b",
+                7: "a",
+            } // added the second possibe content for files in the case that the player is black
 
         const pieceSectionOfMoveNotation =
             piece === "pawn" ? "" :
@@ -474,7 +565,7 @@ export interface BoardHandle {
 
         const possibleCheck = inCheckNonState ? "+" : ""; // should i make this to chek if inCHeckNonSTate is actually w or b.
 
-        let move = `${pieceSectionOfMoveNotation}${captures}${files[toCol]}${8 - toRow}${possibleCheck}`;
+        let move = `${pieceSectionOfMoveNotation}${captures}${files[toCol]}${myColor === "w" ? 8 - toRow : toRow + 1}${possibleCheck}`; //added torow + 1 to correctly annotate chess moves when playing black
 
         if (isPromoting) {
             if (move.slice(-1) === "+" && move.includes("x")) {
@@ -492,8 +583,7 @@ export interface BoardHandle {
             }
 
         }
-        console.log("move see o")
-        console.log(move)
+
         return move;
     }
     function registerMove(piece: string, from: string, to: string, isPromoting: boolean = false) {
@@ -516,17 +606,12 @@ export interface BoardHandle {
         })
     }
 
-    function getFirstLetterOf(piece: string) {
-        return piece.slice(0, 1);
-    }
-
     function calculateLegalMoves(piece: Piece, calculatedValidMoves: Set<string>, from: string) {
         const clonedGameState = gameState.map((prev) => [...prev]);
         const [fromRow, fromCol] = from.split("-").map(Number);
         const calculatedLegalMoves = new Set<string>();
 
-        console.log("calculatedValidMoves")
-        console.log(calculatedValidMoves)
+
         for (const move of calculatedValidMoves) {
             let clonedGameStateSingleBranch = clonedGameState.map((prev) => [...prev]); // cloning the cloned game state so that when i edit the 
             //                                                  clonedGameStateSingleBrancharray i will not edit the main clonedGameState array so that it does not
@@ -537,6 +622,7 @@ export interface BoardHandle {
             let colorOfPiece = colorOf(piece);
             if (!colorOfPiece) continue;
             if (!piece) continue;
+            console.log("clonedGameStateSingleBranch")
             console.log(clonedGameStateSingleBranch)
             let kingInCheck = checkIfKingIsInCheck(clonedGameStateSingleBranch, colorOfPiece, piece, move);
             if (kingInCheck !== undefined) {
@@ -551,6 +637,7 @@ export interface BoardHandle {
 
         console.log(calculatedLegalMoves);
         setLegalMoves(() => new Set(calculatedLegalMoves));
+        return new Set(calculatedLegalMoves);
 
     }
 
@@ -756,13 +843,12 @@ export interface BoardHandle {
                 if (colorOf(clonedGameState[row - i][col - (2 * l)]) === oppositeColor) {
                     if (clonedGameState[row - i][col - (2 * l)]?.slice(0, -2) === "knight") {
                         return [true, "knight", clonedGameState[row - i][col - (2 * l)], [[row - i], [col - (2 * l)]]];
-                        // break;
                     }
                     i = -1;
                     continue;
                 };
 
-                // validKnightMoves.add(`${fromRow - i}-${fromCol - (2 * l)}`);
+
                 i = -1;
             }
             i = 1;
@@ -783,7 +869,7 @@ export interface BoardHandle {
                 if (colorOf(clonedGameState[row - (2 * l)][col - i]) === oppositeColor) {
                     if (clonedGameState[row - (2 * l)][col - i]?.slice(0, -2) === "knight") {
                         return [true, "knight", clonedGameState[row - (2 * l)][col - i], [[row - (2 * l)], [col - i]]];
-                        // break;
+
                     }
                     i = -1;
                     continue;
@@ -823,18 +909,10 @@ export interface BoardHandle {
             if (colorOf(clonedGameState[row + moveForward][col + 1]) === oppositeColor) {
                 if (clonedGameState[row + moveForward][col + 1]?.slice(0, -2) === "pawn") {
                     return [true, "pawn", clonedGameState[row + moveForward][col + 1], [[row + moveForward], [col + 1]]];
-                    // break;
+
                 }
-                // validPawnMoves.add(`${fromRow + moveForward}-${fromCol + 1}`);
             };
         }
-
-        // leftDiagonal();
-        // rightDiagonal();
-
-
-
-
 
         return [false, "", "", [[99], [99]]];
     }
@@ -860,7 +938,6 @@ export interface BoardHandle {
         }
 
 
-        // return copy;
         console.log("copy")
         console.log(copy)
 
@@ -900,12 +977,10 @@ export interface BoardHandle {
         const [fromRow, fromCol] = promotingFrom.split("-").map(Number);
         const [squareRow, squareCol] = squareId.split("-").map(Number);
 
-        // let newGameState: Piece[][] = [];
 
-        // indexOfCurrentGameState = allGameStates.length + 1;
         setIndexOfCurrentGameState(() => allGameStates.length);
 
-         const newGameState = gameState.map(row => [...row]);
+        const newGameState = gameState.map(row => [...row]);
 
         const piec = newGameState[fromRow][fromCol];
 
@@ -913,20 +988,10 @@ export interface BoardHandle {
         newGameState[fromRow][fromCol] = null;
         newGameState[squareRow][squareCol] = piec;
 
-        // newGameState = copy.map(row => [...row]);
+
 
         setGameState((prev) => {
-            // const copy = prev.map(row => [...row]);
 
-            // const piece = copy[fromRow][fromCol];
-            // if (!piece) return prev;
-
-            // copy[fromRow][fromCol] = null;
-            // copy[toRow][toCol] = piece;
-
-            // newGameState = copy.map(row => [...row]);
-            // 
-            // GAMESTATES.push(copy);
 
 
             if (!piec) return prev;
@@ -934,36 +999,13 @@ export interface BoardHandle {
         });
 
 
-        // setGameState((prev) => {
-        //     const copy = prev.map(row => [...row]);
-
-
-        //     copy[fromRow][fromCol] = null;
-        //     copy[squareRow][squareCol] = piece;
-
-        //     newGameState = copy.map(row => [...row]);
-
-        //     // if (piece?.slice(-1) === "w") {
-        //     //     // setPromoting(true);
-        //     //     // setPromotionSquare(`0-${copy[0].indexOf("pawn-w")}`)
-        //     //     // promotingFrom = `${fromRow}-${fromCol}`;
-        //     // } else if (piece?.slice(-1) === "b") {
-        //     //     // setPromoting(true);
-        //     //     // setPromotionSquare(`7-${copy[7].indexOf("pawn-b")}`) // set promtion square var declaration
-        //     //     // promotingFrom = `${fromRow}-${fromCol}`;
-        //     // }
-        //     // GAMESTATES.push(copy);
-
-        //     return copy;
-        // });
-
         setAllGameStates((prev) => {
             const copy = prev.map(gameState => gameState.map(row => [...row]));
             return [...copy, newGameState.map(i => [...i])]
         })
 
         if (!piece) return;
-        // line 873 and below. youre essentailly trying to make it such that the move notation of promoting is correct
+        // line 873(line number might have changed due to some editing) and below. youre essentailly trying to make it such that the move notation of promoting is correct
         // handleMove(piece, promotingFrom, squareId);
         switchTurns();
 
@@ -977,18 +1019,335 @@ export interface BoardHandle {
 
     }
 
-    function showPrevOrNextGameState(num: number) {
+    function countMaterial() {
+        let posEvaluation = 0
+        calcGameState.forEach((row, rowIndex) =>
+            row.forEach((square, squareIndex) => {
+                switch (square) {
+                    case "queen-b":
+                        posEvaluation -= 9;
+                        break;
+                    case "rook-b":
+                        posEvaluation -= 5;
+                        break;
+                    case "bishop-b":
+                        posEvaluation -= 3;
+                        break;
+                    case "knight-b":
+                        posEvaluation -= 3;
+                        break;
+                    case "pawn-b":
+                        posEvaluation -= 1;
+                        break;
+                    case "queen-w":
+                        posEvaluation += 9;
+                        break;
+                    case "rook-w":
+                        posEvaluation += 5;
+                        break;
+                    case "bishop-w":
+                        posEvaluation += 3;
+                        break;
+                    case "knight-w":
+                        posEvaluation += 3;
+                        break;
+                    case "pawn-w":
+                        posEvaluation += 1;
+                        break;
+
+                    default:
+                        posEvaluation += 0;
+                }
+            }))
+
+        return posEvaluation;
+    }
+
+    function callMakeInvisibleMove() {
+        makeInvisibleMove("b", 4, null)
+        const computerColor = getOppositeColorOf(myColor);
+        const bestMove = computerColor === "b" ?
+            Object.keys(posEvaluations).reduce((minK, k) => posEvaluations[k] < posEvaluations[minK] ? k : minK)
+            : Object.keys(posEvaluations).reduce((maxK, k) => posEvaluations[k] > posEvaluations[maxK] ? k : maxK);
+
+    }
+
+    function makeInvisibleMove(color: string, movesDeep: number, firstMoveInBranch: string | null) {
+
+        if (movesDeep <= 0) return;  // so we dont get an infinte recursion
 
 
-        setCurrentGameState(indexOfCurrentGameState + num)
+        // get a possible move, calculate x moves ahead, count the material onboard, store the move and the evaluation in some variable
+        // do this for all possible moves and the choose the move with the highest evaluation
 
 
-        console.log(allGameStates)
+
+
+
+        // const computerColor = getOppositeColorOf(myColor);
+        for (let i = 0; i < 1; i++) {
+
+            gameState.forEach((row, rowIndex) =>
+                row.forEach((square, squareIndex) => {
+
+                    if (square?.slice(-1) === color) {
+                        const piece = square;
+                        const from = `${rowIndex}-${squareIndex}`;
+                        const calculatedValidMoves = calculateValidMoves(piece.slice(0, -2), from, color);
+                        const returnedLegalMoves = calculateLegalMoves(piece, calculatedValidMoves, from);
+
+                        // if (returnedLegalMoves.size <= 0) return; // return here works like 'continue' (yes 'continue' not break) in a normal loop. you can't use continue in forEach so instead you use return which works like continue.
+
+                        for (let i = 0; i < returnedLegalMoves.size; i++) {
+
+                            // const to = [...returnedLegalMoves][Math.floor(Math.random() * returnedLegalMoves.size)];
+                            const to = [...returnedLegalMoves][i];
+
+                            let firstMoveInBranch_ = firstMoveInBranch;
+                            if (!firstMoveInBranch_) {
+                                firstMoveInBranch_ = to;
+                            }
+
+                            cancelHighlights();
+
+
+                            if (!((piece === "pawn-w" && rowIndex === 1) || (piece === "pawn-b" && rowIndex === 6))) {
+                                // handleMove(piece, from, to);
+
+
+                                // here to
+                                let calcWhiteKingPosition = null;
+                                let calcBlackKingPosition = null;
+                                if (piece === "king-w") {
+                                    // setWhiteKingPosition(to);
+                                    calcWhiteKingPosition = to;
+                                } else if (piece === "king-b") {
+                                    // setBlackKingPosition(to);
+                                    calcBlackKingPosition = to;
+                                }
+
+                                const [fromRow, fromCol] = from.split("-").map(Number);
+                                const [toRow, toCol] = to.split("-").map(Number);
+
+                                // let newGameState: Piece[][] = [];
+
+                                // indexOfCurrentGameState = allGameStates.length + 1;
+                                // setIndexOfCurrentGameState(() => allGameStates.length);
+
+                                const newGameState = gameState.map(row => [...row]);
+
+                                const piec = newGameState[fromRow][fromCol];
+
+
+                                newGameState[fromRow][fromCol] = null;
+                                newGameState[toRow][toCol] = piec;
+
+                                // newGameState = copy.map(row => [...row]);
+
+                                // setCalcGameState((prev) => {
+                                //     // const copy = prev.map(row => [...row]);
+
+                                //     // const piece = copy[fromRow][fromCol];
+                                //     // if (!piece) return prev;
+
+                                //     // copy[fromRow][fromCol] = null;
+                                //     // copy[toRow][toCol] = piece;
+
+                                //     // newGameState = copy.map(row => [...row]);
+                                //     // 
+                                //     // GAMESTATES.push(copy);
+
+
+                                //     if (!piec) return prev;
+                                //     return newGameState.map(row => [...row]);
+                                // });
+
+                                calcGameState = newGameState.map(row => [...row]);
+
+                                setAllCalcGameStates((prev) => {
+                                    const copy = prev.map(gameState => gameState.map(row => [...row]));
+                                    return [...copy, newGameState.map(i => [...i])]
+                                })
+                                if (movesDeep === 1) {
+                                    // posEvaluations.push(countMaterial());
+
+                                    posEvaluations[firstMoveInBranch_] = countMaterial();
+
+                                }
+
+
+
+                                makeInvisibleMove(getOppositeColorOf(color), movesDeep - 1, firstMoveInBranch)
+                                // here 
+
+
+
+                                switchTurns();
+
+                                const opponentColor = getOppositeColorOf(piece.slice(-1));
+                                checkIfOpponentIsInCheck(from, to, opponentColor);
+                                registerMove(piece.slice(0, -2), from, to);
+
+
+                            } else {
+                                setPromoting(true);
+                                setPromotionSquare(to);
+                                // promotingFrom = from; // why does this not work for if it is a state variable.
+                                //                       it was not working like this so i changed teh variable to a state variable
+                                setPromotingFrom(from);
+                            }
+                        }
+
+                    }
+                }));
+
+
+
+
+            // const randomRowNumber = Math.floor(Math.random() * 8);
+            // const randomColNumber = Math.floor(Math.random() * 8);
+            // const piece = gameState[randomRowNumber][randomColNumber];
+            // const from = `${randomRowNumber}-${randomColNumber}`;
+
+
+
+            // if (piece?.slice(-1) === computerColor) {
+            //     const calculatedValidMoves = calculateValidMoves(piece.slice(0, -2), from, computerColor);
+            //     const returnedLegalMoves = calculateLegalMoves(piece, calculatedValidMoves, from);
+
+            //     if (returnedLegalMoves.size <= 0) continue;
+
+            //     const to = [...returnedLegalMoves][Math.floor(Math.random() * returnedLegalMoves.size)];
+
+            //     cancelHighlights();
+
+
+            //     if (!((piece === "pawn-w" && randomRowNumber === 1) || (piece === "pawn-b" && randomRowNumber === 6))) {
+            //         handleMove(piece, from, to);
+            //         switchTurns();
+
+            //         const opponentColor = getOppositeColorOf(piece.slice(-1));
+            //         checkIfOpponentIsInCheck(from, to, opponentColor);
+            //         registerMove(piece.slice(0, -2), from, to);
+
+
+            //     } else {
+            //         setPromoting(true);
+            //         setPromotionSquare(to);
+            //         // promotingFrom = from; // why does this not work for if it is a state variable.
+            //         //                       it was not working like this so i changed teh variable to a state variable
+            //         setPromotingFrom(from);
+            //     }
+            //     break;
+            // }
+        }
+
+        setComputerTurn(false);
+
+    }
+
+    function makeComputerMove() {
+
+
+        // get a possible move, calculate x moves ahead, count the material onboard, store the move and the evaluation in some variable
+        // do this for all possible moves and the choose the move with the highest evaluation
+
+
+
+
+
+        const computerColor = getOppositeColorOf(myColor);
+        for (let i = 0; i < 256; i++) {
+
+            // gameState.forEach((row, rowIndex) =>
+            //     row.forEach((square, squareIndex) => {
+
+            //         if (square?.slice(-1) === computerColor) {
+            //             const piece = square;
+            //             const from = `${rowIndex}-${squareIndex}`;
+            //             const calculatedValidMoves = calculateValidMoves(piece.slice(0, -2), from, computerColor);
+            //             const returnedLegalMoves = calculateLegalMoves(piece, calculatedValidMoves, from);
+
+            //             // if (returnedLegalMoves.size <= 0) return; // return here works like 'continue' (yes 'continue' not break) in a normal loop. you can't use continue in forEach so instead you use return which works like continue.
+
+            //             for (let i = 0; i < returnedLegalMoves.size; i++) {
+
+
+            //                 // const to = [...returnedLegalMoves][Math.floor(Math.random() * returnedLegalMoves.size)];
+            //                 const to = [...returnedLegalMoves][i];
+
+
+            //                 cancelHighlights();
+
+
+            //                 if (!((piece === "pawn-w" && randomRowNumber === 1) || (piece === "pawn-b" && randomRowNumber === 6))) {
+            //                     handleMove(piece, from, to);
+            //                     switchTurns();
+
+            //                     const opponentColor = getOppositeColorOf(piece.slice(-1));
+            //                     checkIfOpponentIsInCheck(from, to, opponentColor);
+            //                     registerMove(piece.slice(0, -2), from, to);
+
+
+            //                 } else {
+            //                     setPromoting(true);
+            //                     setPromotionSquare(to);
+            //                     // promotingFrom = from; // why does this not work for if it is a state variable.
+            //                     //                       it was not working like this so i changed teh variable to a state variable
+            //                     setPromotingFrom(from);
+            //                 }
+            //             }
+
+            //         }
+            //     }));
+
+
+
+
+            const randomRowNumber = Math.floor(Math.random() * 8);
+            const randomColNumber = Math.floor(Math.random() * 8);
+            const piece = gameState[randomRowNumber][randomColNumber];
+            const from = `${randomRowNumber}-${randomColNumber}`;
+
+
+
+            if (piece?.slice(-1) === computerColor) {
+                const calculatedValidMoves = calculateValidMoves(piece.slice(0, -2), from, computerColor);
+                const returnedLegalMoves = calculateLegalMoves(piece, calculatedValidMoves, from);
+
+                if (returnedLegalMoves.size <= 0) continue;
+
+                const to = [...returnedLegalMoves][Math.floor(Math.random() * returnedLegalMoves.size)];
+
+                cancelHighlights();
+
+
+                if (!((piece === "pawn-w" && randomRowNumber === 1) || (piece === "pawn-b" && randomRowNumber === 6))) {
+                    handleMove(piece, from, to);
+                    switchTurns();
+
+                    const opponentColor = getOppositeColorOf(piece.slice(-1));
+                    checkIfOpponentIsInCheck(from, to, opponentColor);
+                    registerMove(piece.slice(0, -2), from, to);
+
+
+                } else {
+                    setPromoting(true);
+                    setPromotionSquare(to);
+                    // promotingFrom = from; // why does this not work for if it is a state variable.
+                    //                       it was not working like this so i changed teh variable to a state variable
+                    setPromotingFrom(from);
+                }
+                break;
+            }
+        }
+
+        setComputerTurn(false);
+
     }
 
     function setCurrentGameState(num: number) {
         if (num < 0 || num >= allGameStates.length) return;
-        // indexOfCurrentGameState = num;
         setIndexOfCurrentGameState(() => num);
         setGameState(() => allGameStates[num].map(i => [...i]))
     }
@@ -1002,10 +1361,20 @@ export interface BoardHandle {
         }
     }));
 
+    useEffect(() => {
+
+        if (mode === "Computer" && computerTurn) {
+            makeComputerMove();
+        }
+        return () => {
+
+        };
+    }, [gameState]);
 
     return (
         <DragDropProvider
             onDragStart={(event) => {
+
                 if (indexOfCurrentGameState !== allGameStates.length - 1) return;
 
                 const from = event.operation.source?.id;
@@ -1017,6 +1386,7 @@ export interface BoardHandle {
 
                 const generalizedPiece = piece.slice(0, -2);
                 const color = piece.slice(-1)
+                if (mode === "Computer" && color !== myColor) return;
                 const calculatedValidMoves = calculateValidMoves(generalizedPiece, from, color);
                 calculateLegalMoves(piece, calculatedValidMoves, from)
             }}
@@ -1044,6 +1414,12 @@ export interface BoardHandle {
                     const opponentColor = getOppositeColorOf(piece.slice(-1));
                     checkIfOpponentIsInCheck(from, to, opponentColor);
                     registerMove(piece.slice(0, -2), from, to);
+
+                    // if (mode === "Computer") {
+                    //     makeComputerMove();
+                    // }
+
+                    setComputerTurn(true)
                 } else {
                     setPromoting(true);
                     setPromotionSquare(to);
@@ -1088,7 +1464,7 @@ export interface BoardHandle {
             </div>
         </DragDropProvider>
     );
-});   
+});
 
 export default Board;
 

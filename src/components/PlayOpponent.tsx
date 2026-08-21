@@ -1,10 +1,11 @@
 import { useRef, useState } from "react";
 import Board, { type BoardHandle } from "./Board";
+import { type Mode } from "@/types";
 
 export default function PlayOpponent({
     opponent,
 }: {
-    opponent: string;
+    opponent: Mode;
 }) {
     const [movesPlayed, setMovesPlayed] = useState<string[][]>([]);
     const boardRef = useRef<BoardHandle>(null);
@@ -34,7 +35,7 @@ export default function PlayOpponent({
                             </div>
                         </div>
 
-                        <Board ref={boardRef} setMovesPlayed={setMovesPlayed} />
+                        <Board ref={boardRef} setMovesPlayed={setMovesPlayed} mode={opponent}/>
 
                         <div className="flex items-center gap-3 w-[60%] my-3">
                             <div className="bg-gray-500 rounded-full w-7 h-7">

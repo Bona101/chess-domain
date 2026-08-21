@@ -18,3 +18,5 @@ export type Shade = "light" | "dark";
 export type WhoseTurn = "w" | "b" | null;
 
 export type InCheck = "w" | "b" | null;
+
+export type Mode = "Computer" | "Person" | "Self";
