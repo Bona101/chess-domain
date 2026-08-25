@@ -1064,16 +1064,16 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
     }
 
     function callMakeInvisibleMove() {
-        makeInvisibleMove("b", 4, null)
+        makeInvisibleMove(getOppositeColorOf(myColor), 4, null)
         const computerColor = getOppositeColorOf(myColor);
         const bestMove = computerColor === "b" ?
             Object.keys(posEvaluations).reduce((minK, k) => posEvaluations[k] < posEvaluations[minK] ? k : minK)
             : Object.keys(posEvaluations).reduce((maxK, k) => posEvaluations[k] > posEvaluations[maxK] ? k : maxK);
-
+        makeComputerMove2(bestMove)
     }
 
     function makeInvisibleMove(color: string, movesDeep: number, firstMoveInBranch: string | null) {
-
+        
         if (movesDeep <= 0) return;  // so we dont get an infinte recursion
 
 
@@ -1105,7 +1105,7 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
 
                             let firstMoveInBranch_ = firstMoveInBranch;
                             if (!firstMoveInBranch_) {
-                                firstMoveInBranch_ = to;
+                                firstMoveInBranch_ = `${from}-${to}`;
                             }
 
                             cancelHighlights();
@@ -1142,26 +1142,7 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
                                 newGameState[fromRow][fromCol] = null;
                                 newGameState[toRow][toCol] = piec;
 
-                                // newGameState = copy.map(row => [...row]);
-
-                                // setCalcGameState((prev) => {
-                                //     // const copy = prev.map(row => [...row]);
-
-                                //     // const piece = copy[fromRow][fromCol];
-                                //     // if (!piece) return prev;
-
-                                //     // copy[fromRow][fromCol] = null;
-                                //     // copy[toRow][toCol] = piece;
-
-                                //     // newGameState = copy.map(row => [...row]);
-                                //     // 
-                                //     // GAMESTATES.push(copy);
-
-
-                                //     if (!piec) return prev;
-                                //     return newGameState.map(row => [...row]);
-                                // });
-
+                            
                                 calcGameState = newGameState.map(row => [...row]);
 
                                 setAllCalcGameStates((prev) => {
@@ -1182,11 +1163,11 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
 
 
 
-                                switchTurns();
+                                // switchTurns();
 
-                                const opponentColor = getOppositeColorOf(piece.slice(-1));
-                                checkIfOpponentIsInCheck(from, to, opponentColor);
-                                registerMove(piece.slice(0, -2), from, to);
+                                // const opponentColor = getOppositeColorOf(piece.slice(-1));
+                                // checkIfOpponentIsInCheck(from, to, opponentColor);
+                                // registerMove(piece.slice(0, -2), from, to);
 
 
                             } else {
@@ -1246,6 +1227,44 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
 
     }
 
+    function makeComputerMove2(bestMove: string) {
+
+
+        // get a possible move, calculate x moves ahead, count the material onboard, store the move and the evaluation in some variable
+        // do this for all possible moves and the choose the move with the highest evaluation
+
+        const computerColor = getOppositeColorOf(myColor);
+
+        const [fromRowNumber, fromColNumber, toRowNumber, toColNumber] = bestMove.split("-").map(Number);
+        const piece = gameState[fromRowNumber][fromColNumber];
+        const from = `${fromRowNumber}-${fromColNumber}`;
+        const to = `${toRowNumber}-${toColNumber}`;
+
+
+        if (piece?.slice(-1) === computerColor) {
+            cancelHighlights();
+
+            if (!((piece === "pawn-w" && fromRowNumber === 1) || (piece === "pawn-b" && fromRowNumber === 6))) {
+                handleMove(piece, from, to);
+                switchTurns();
+
+                const opponentColor = getOppositeColorOf(piece.slice(-1));
+                checkIfOpponentIsInCheck(from, to, opponentColor);
+                registerMove(piece.slice(0, -2), from, to);
+            } else {
+                setPromoting(true);
+                setPromotionSquare(to);
+                // promotingFrom = from; // why does this not work for if it is a state variable.
+                //                       it was not working like this so i changed teh variable to a state variable
+                setPromotingFrom(from);
+            }
+        }
+
+        setComputerTurn(false);
+        posEvaluations = {}
+        calcGameState = []
+
+    }
     function makeComputerMove() {
 
 
@@ -1364,7 +1383,7 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
     useEffect(() => {
 
         if (mode === "Computer" && computerTurn) {
-            makeComputerMove();
+            callMakeInvisibleMove();
         }
         return () => {
 
