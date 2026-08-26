@@ -18,12 +18,18 @@ export interface BoardHandle {
 
 // export default function Board({ setMovesPlayed }: BoardProps) {
 const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref) => {
+
+    const [myColor, setMyColor] = useState<string>(Math.random() < 0.5 ? "w" : "b");
+    let calcBlackKingPosition: string = myColor === "w" ? "0-4" : "7-3";
+    let calcWhiteKingPosition: string = myColor === "w" ? "7-4" : "0-3";
+
+    let invis = 1;
+
     let posEvaluations: Record<string, number> = {};
     let calcGameState: Piece[][] = [];
 
     const [indexOfCurrentGameState, setIndexOfCurrentGameState] = useState(0);
 
-    const [myColor, setMyColor] = useState<string>(Math.random() < 0.5 ? "w" : "b");
     const [computerTurn, setComputerTurn] = useState<boolean>(false);
 
 
@@ -168,10 +174,10 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
 
         calcGameState = newGameState.map(row => [...row]);
 
-        setAllCalcGameStates((prev) => {
-            const copy = prev.map(gameState => gameState.map(row => [...row]));
-            return [...copy, newGameState.map(i => [...i])]
-        })
+        // setAllCalcGameStates((prev) => {
+        //     const copy = prev.map(gameState => gameState.map(row => [...row]));
+        //     return [...copy, newGameState.map(i => [...i])]
+        // })
 
 
 
@@ -213,8 +219,8 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
             if (fromCol - 1 < 0) return; // this line was this before => if (fromCol + moveForward < 0) return; 
             //                           i think this is a mistake but maybe i wasnt noticing it because of it has
             //                           to be an edge pawn trying to capture? or maybe because i was not checking the console for errors.
-            if (colorOf(gameState[fromRow + moveForward][fromCol - 1]) === color) return;
-            if (colorOf(gameState[fromRow + moveForward][fromCol - 1]) === oppositeColor) {
+            if (colorOf(calcGameState[fromRow + moveForward][fromCol - 1]) === color) return;
+            if (colorOf(calcGameState[fromRow + moveForward][fromCol - 1]) === oppositeColor) {
                 validPawnMoves.add(`${fromRow + moveForward}-${fromCol - 1}`);
             };
 
@@ -224,8 +230,8 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
             if (fromRow + moveForward < 0) return;
             if (fromRow + moveForward > 7) return;
             if (fromCol + 1 > 7) return;
-            if (colorOf(gameState[fromRow + moveForward][fromCol + 1]) === color) return;
-            if (colorOf(gameState[fromRow + moveForward][fromCol + 1]) === oppositeColor) {
+            if (colorOf(calcGameState[fromRow + moveForward][fromCol + 1]) === color) return;
+            if (colorOf(calcGameState[fromRow + moveForward][fromCol + 1]) === oppositeColor) {
                 validPawnMoves.add(`${fromRow + moveForward}-${fromCol + 1}`);
             };
         }
@@ -240,8 +246,8 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
             if (fromRow + moveForward < 0) break;
             if (fromRow + moveForward > 7) break;
 
-            if (colorOf(gameState[fromRow + moveForward][fromCol]) === color) break;
-            if (colorOf(gameState[fromRow + moveForward][fromCol]) === oppositeColor) break;
+            if (colorOf(calcGameState[fromRow + moveForward][fromCol]) === color) break;
+            if (colorOf(calcGameState[fromRow + moveForward][fromCol]) === oppositeColor) break;
 
             validPawnMoves.add(`${fromRow + moveForward}-${fromCol}`);
         }
@@ -261,8 +267,8 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
         for (let i = 1; i < 8; i++) {
             if (i > limit) break;
             if (fromRow - i < 0) break;
-            if (colorOf(gameState[fromRow - i][fromCol]) === color) break;
-            if (colorOf(gameState[fromRow - i][fromCol]) === oppositeColor) {
+            if (colorOf(calcGameState[fromRow - i][fromCol]) === color) break;
+            if (colorOf(calcGameState[fromRow - i][fromCol]) === oppositeColor) {
                 validRookMoves.add(`${fromRow - i}-${fromCol}`);
                 break;
             };
@@ -273,21 +279,21 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
         for (let i = 1; i < 8; i++) {
             if (i > limit) break;
             if (fromRow + i > 7) break;
-            if (colorOf(gameState[fromRow + i][fromCol]) === color) break;
-            if (colorOf(gameState[fromRow + i][fromCol]) === oppositeColor) {
+            if (colorOf(calcGameState[fromRow + i][fromCol]) === color) break;
+            if (colorOf(calcGameState[fromRow + i][fromCol]) === oppositeColor) {
                 validRookMoves.add(`${fromRow + i}-${fromCol}`);
                 break;
             };
 
             validRookMoves.add(`${fromRow + i}-${fromCol}`);
-            console.log("french")
+            // console.log("french")
         }
 
         for (let i = 1; i < 8; i++) {
             if (i > limit) break;
             if (fromCol - i < 0) break;
-            if (colorOf(gameState[fromRow][fromCol - i]) === color) break;
-            if (colorOf(gameState[fromRow][fromCol - i]) === oppositeColor) {
+            if (colorOf(calcGameState[fromRow][fromCol - i]) === color) break;
+            if (colorOf(calcGameState[fromRow][fromCol - i]) === oppositeColor) {
                 validRookMoves.add(`${fromRow}-${fromCol - i}`);
                 break;
             };
@@ -298,8 +304,8 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
         for (let i = 1; i < 8; i++) {
             if (i > limit) break;
             if (fromCol + i > 7) break;
-            if (colorOf(gameState[fromRow][fromCol + i]) === color) break;
-            if (colorOf(gameState[fromRow][fromCol + i]) === oppositeColor) {
+            if (colorOf(calcGameState[fromRow][fromCol + i]) === color) break;
+            if (colorOf(calcGameState[fromRow][fromCol + i]) === oppositeColor) {
                 validRookMoves.add(`${fromRow}-${fromCol + i}`);
                 break;
             };
@@ -327,43 +333,43 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
 
         let i = 1;
         let l = 1;
-        console.log("why")
+        // console.log("why")
         for (let k = 0; k < 2; k++) {
-            console.log("why not")
+            // console.log("why not")
 
             for (let j = 0; j < 2; j++) {
-                console.log("why not why")
+                // console.log("why not why")
 
 
                 if (fromCol - (2 * l) < 0) {
                     i = -1;
                     continue;
                 }
-                console.log("survival");
+                // console.log("survival");
                 if (fromCol - (2 * l) > 7) {
                     i = -1;
                     continue;
                 }
-                console.log("survival");
+                // console.log("survival");
                 if (fromRow - i < 0) {
                     i = -1;
                     continue;
                 }
-                console.log("survival");
+                // console.log("survival");
                 if (fromRow - i > 7) {
                     i = -1;
                     continue;
                 }
 
-                console.log("survival");
+                // console.log("survival");
 
 
-                if (colorOf(gameState[fromRow - i][fromCol - (2 * l)]) === color) {
-                    console.log("theres no way")
+                if (colorOf(calcGameState[fromRow - i][fromCol - (2 * l)]) === color) {
+                    // console.log("theres no way")
                     i = -1;
                     continue;
                 };
-                console.log("theres way")
+                // console.log("theres way")
 
                 validKnightMoves.add(`${fromRow - i}-${fromCol - (2 * l)}`);
                 i = -1;
@@ -395,12 +401,12 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
                 }
 
 
-                if (colorOf(gameState[fromRow - (2 * l)][fromCol - i]) === color) {
-                    console.log("beautiful")
+                if (colorOf(calcGameState[fromRow - (2 * l)][fromCol - i]) === color) {
+                    // console.log("beautiful")
                     i = -1;
                     continue;
                 };
-                console.log("boy")
+                // console.log("boy")
 
                 validKnightMoves.add(`${fromRow - (2 * l)}-${fromCol - i}`);
                 i = -1;
@@ -416,6 +422,8 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
 
     }
     function calculateBishopMoves(from: string, color: string, limit: number = Infinity) {
+
+
         const [fromRow, fromCol] = from.split("-").map(Number);
 
         const validBishopMoves = new Set<string>();
@@ -425,8 +433,8 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
             if (i > limit) break;
             if (fromRow - i < 0) break;
             if (fromCol - i < 0) break;
-            if (colorOf(gameState[fromRow - i][fromCol - i]) === color) break;
-            if (colorOf(gameState[fromRow - i][fromCol - i]) === oppositeColor) {
+            if (colorOf(calcGameState[fromRow - i][fromCol - i]) === color) break;
+            if (colorOf(calcGameState[fromRow - i][fromCol - i]) === oppositeColor) {
                 validBishopMoves.add(`${fromRow - i}-${fromCol - i}`);
                 break;
             };
@@ -438,8 +446,8 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
             if (i > limit) break;
             if (fromRow + i > 7) break;
             if (fromCol + i > 7) break;
-            if (colorOf(gameState[fromRow + i][fromCol + i]) === color) break;
-            if (colorOf(gameState[fromRow + i][fromCol + i]) === oppositeColor) {
+            if (colorOf(calcGameState[fromRow + i][fromCol + i]) === color) break;
+            if (colorOf(calcGameState[fromRow + i][fromCol + i]) === oppositeColor) {
                 validBishopMoves.add(`${fromRow + i}-${fromCol + i}`);
                 break;
             };
@@ -451,8 +459,8 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
             if (i > limit) break;
             if (fromRow + i > 7) break;
             if (fromCol - i < 0) break;
-            if (colorOf(gameState[fromRow + i][fromCol - i]) === color) break;
-            if (colorOf(gameState[fromRow + i][fromCol - i]) === oppositeColor) {
+            if (colorOf(calcGameState[fromRow + i][fromCol - i]) === color) break;
+            if (colorOf(calcGameState[fromRow + i][fromCol - i]) === oppositeColor) {
                 validBishopMoves.add(`${fromRow + i}-${fromCol - i}`);
                 break;
             };
@@ -464,8 +472,8 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
             if (i > limit) break;
             if (fromRow - i < 0) break;
             if (fromCol + i > 7) break;
-            if (colorOf(gameState[fromRow - i][fromCol + i]) === color) break;
-            if (colorOf(gameState[fromRow - i][fromCol + i]) === oppositeColor) {
+            if (colorOf(calcGameState[fromRow - i][fromCol + i]) === color) break;
+            if (colorOf(calcGameState[fromRow - i][fromCol + i]) === oppositeColor) {
                 validBishopMoves.add(`${fromRow - i}-${fromCol + i}`);
                 break;
             };
@@ -529,9 +537,9 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
         const [_, fromCol] = from.split("-").map(Number);
         const [toRow, toCol] = to.split("-").map(Number);
         const opponentPieceOnLandingSquare = gameState[toRow][toCol];
-        console.log(gameState)
-        console.log("opponentPieceOnLandingSquare")
-        console.log(opponentPieceOnLandingSquare)
+        // console.log(gameState)
+        // console.log("opponentPieceOnLandingSquare")
+        // console.log(opponentPieceOnLandingSquare)
 
         const files: Record<number, string> = myColor === "w" ?
             {
@@ -607,7 +615,7 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
     }
 
     function calculateLegalMoves(piece: Piece, calculatedValidMoves: Set<string>, from: string) {
-        const clonedGameState = gameState.map((prev) => [...prev]);
+        const clonedGameState = calcGameState.map((prev) => [...prev]);
         const [fromRow, fromCol] = from.split("-").map(Number);
         const calculatedLegalMoves = new Set<string>();
 
@@ -622,8 +630,8 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
             let colorOfPiece = colorOf(piece);
             if (!colorOfPiece) continue;
             if (!piece) continue;
-            console.log("clonedGameStateSingleBranch")
-            console.log(clonedGameStateSingleBranch)
+            // console.log("clonedGameStateSingleBranch")
+            // console.log(clonedGameStateSingleBranch)
             let kingInCheck = checkIfKingIsInCheck(clonedGameStateSingleBranch, colorOfPiece, piece, move);
             if (kingInCheck !== undefined) {
 
@@ -631,18 +639,18 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
             } else {
                 calculatedLegalMoves.add(move);
             }
-            console.log("apples");
-            console.log(kingInCheck);
+            // console.log("apples");
+            // console.log(kingInCheck);
         }
 
-        console.log(calculatedLegalMoves);
+        // console.log(calculatedLegalMoves);
         setLegalMoves(() => new Set(calculatedLegalMoves));
         return new Set(calculatedLegalMoves);
 
     }
 
     function checkIfKingIsInCheck(clonedGameState: Piece[][], color: string, pieceInMotion: string, branchStartingSquare: string) {
-        let realOrFakeKingPosition = color === "w" ? whiteKingPosition : blackKingPosition;
+        let realOrFakeKingPosition = color === "w" ? calcWhiteKingPosition : calcBlackKingPosition;
 
         if (colorOf(pieceInMotion) !== color) return;
         if (pieceInMotion.slice(0, -2) === "king") {
@@ -938,33 +946,33 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
         }
 
 
-        console.log("copy")
-        console.log(copy)
+        // console.log("copy")
+        // console.log(copy)
 
         const kingPosition = opponentColor === "w" ? whiteKingPosition : blackKingPosition;
 
         const opponentKing = "king-" + opponentColor;
 
         let kingInCheck = checkIfKingIsInCheck(copy, opponentColor, opponentKing, kingPosition);
-        console.log(kingInCheck)
+        // console.log(kingInCheck)
         if (kingInCheck && kingInCheck[0]) {
             switch (opponentColor) {
                 case "w":
                     setInCheck("w")
                     inCheckNonState = "w";
-                    console.log("w in check")
+                    // console.log("w in check")
                     break;
 
                 case "b":
                     setInCheck("b")
                     inCheckNonState = "b"
-                    console.log("b in check")
+                    // console.log("b in check")
                     break;
 
                 default:
                     setInCheck(null);
                     inCheckNonState = null;
-                    console.log("null in check")
+                    // console.log("null in check")
                     break;
             }
         }
@@ -972,8 +980,8 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
     }
 
     function setPromotedTo(piece: Piece, squareId: string) {
-        console.log("promotingFrom here")
-        console.log(promotingFrom)
+        // console.log("promotingFrom here")
+        // console.log(promotingFrom)
         const [fromRow, fromCol] = promotingFrom.split("-").map(Number);
         const [squareRow, squareCol] = squareId.split("-").map(Number);
 
@@ -1064,16 +1072,28 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
     }
 
     function callMakeInvisibleMove() {
-        makeInvisibleMove(getOppositeColorOf(myColor), 4, null)
+        calcGameState = gameState.map(row => [...row]);
+        console.log("calcGameState")
+        console.log(calcGameState)
+        makeInvisibleMove(getOppositeColorOf(myColor), 2, null)
         const computerColor = getOppositeColorOf(myColor);
+
+        // if (Object.keys(posEvaluations).length === 0){
+        //     makeComputerMove();
+        // } 
+        // uncomment this to solve the "calling reduce on emtpy array" error. 
+        // hopefully it solves it but why would posEvaluations be empty if it is not checkmate.
+
+
         const bestMove = computerColor === "b" ?
             Object.keys(posEvaluations).reduce((minK, k) => posEvaluations[k] < posEvaluations[minK] ? k : minK)
             : Object.keys(posEvaluations).reduce((maxK, k) => posEvaluations[k] > posEvaluations[maxK] ? k : maxK);
         makeComputerMove2(bestMove)
     }
 
+
     function makeInvisibleMove(color: string, movesDeep: number, firstMoveInBranch: string | null) {
-        
+
         if (movesDeep <= 0) return;  // so we dont get an infinte recursion
 
 
@@ -1085,14 +1105,18 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
 
 
         // const computerColor = getOppositeColorOf(myColor);
-        for (let i = 0; i < 1; i++) {
 
-            gameState.forEach((row, rowIndex) =>
-                row.forEach((square, squareIndex) => {
-
+        //calcGamestate foreach or gamestate forEach. probably doesnt matter
+        calcGameState.forEach((row, rowIndex) =>
+            row.forEach((square, squareIndex) => {
+                const prob = Math.random();
+                if (prob > 0.85) {
                     if (square?.slice(-1) === color) {
                         const piece = square;
                         const from = `${rowIndex}-${squareIndex}`;
+
+                        // calcGameState = gameState.map(row => [...row])
+
                         const calculatedValidMoves = calculateValidMoves(piece.slice(0, -2), from, color);
                         const returnedLegalMoves = calculateLegalMoves(piece, calculatedValidMoves, from);
 
@@ -1116,8 +1140,7 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
 
 
                                 // here to
-                                let calcWhiteKingPosition = null;
-                                let calcBlackKingPosition = null;
+
                                 if (piece === "king-w") {
                                     // setWhiteKingPosition(to);
                                     calcWhiteKingPosition = to;
@@ -1134,7 +1157,7 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
                                 // indexOfCurrentGameState = allGameStates.length + 1;
                                 // setIndexOfCurrentGameState(() => allGameStates.length);
 
-                                const newGameState = gameState.map(row => [...row]);
+                                const newGameState = calcGameState.map(row => [...row]);
 
                                 const piec = newGameState[fromRow][fromCol];
 
@@ -1142,13 +1165,13 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
                                 newGameState[fromRow][fromCol] = null;
                                 newGameState[toRow][toCol] = piec;
 
-                            
+
                                 calcGameState = newGameState.map(row => [...row]);
 
-                                setAllCalcGameStates((prev) => {
-                                    const copy = prev.map(gameState => gameState.map(row => [...row]));
-                                    return [...copy, newGameState.map(i => [...i])]
-                                })
+                                // setAllCalcGameStates((prev) => {
+                                //     const copy = prev.map(gameState => gameState.map(row => [...row]));
+                                //     return [...copy, newGameState.map(i => [...i])]
+                                // })
                                 if (movesDeep === 1) {
                                     // posEvaluations.push(countMaterial());
 
@@ -1156,9 +1179,15 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
 
                                 }
 
+                                console.log("over here")
+                                console.log(calcGameState)
+                                console.log(color)
+                                console.log(movesDeep)
+                                console.log(firstMoveInBranch)
+                                console.log(invis)
+                                invis++;
 
-
-                                makeInvisibleMove(getOppositeColorOf(color), movesDeep - 1, firstMoveInBranch)
+                                makeInvisibleMove(getOppositeColorOf(color), movesDeep - 1, firstMoveInBranch_)
                                 // here 
 
 
@@ -1180,48 +1209,12 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
                         }
 
                     }
-                }));
+                }
+            }));
 
 
 
 
-            // const randomRowNumber = Math.floor(Math.random() * 8);
-            // const randomColNumber = Math.floor(Math.random() * 8);
-            // const piece = gameState[randomRowNumber][randomColNumber];
-            // const from = `${randomRowNumber}-${randomColNumber}`;
-
-
-
-            // if (piece?.slice(-1) === computerColor) {
-            //     const calculatedValidMoves = calculateValidMoves(piece.slice(0, -2), from, computerColor);
-            //     const returnedLegalMoves = calculateLegalMoves(piece, calculatedValidMoves, from);
-
-            //     if (returnedLegalMoves.size <= 0) continue;
-
-            //     const to = [...returnedLegalMoves][Math.floor(Math.random() * returnedLegalMoves.size)];
-
-            //     cancelHighlights();
-
-
-            //     if (!((piece === "pawn-w" && randomRowNumber === 1) || (piece === "pawn-b" && randomRowNumber === 6))) {
-            //         handleMove(piece, from, to);
-            //         switchTurns();
-
-            //         const opponentColor = getOppositeColorOf(piece.slice(-1));
-            //         checkIfOpponentIsInCheck(from, to, opponentColor);
-            //         registerMove(piece.slice(0, -2), from, to);
-
-
-            //     } else {
-            //         setPromoting(true);
-            //         setPromotionSquare(to);
-            //         // promotingFrom = from; // why does this not work for if it is a state variable.
-            //         //                       it was not working like this so i changed teh variable to a state variable
-            //         setPromotingFrom(from);
-            //     }
-            //     break;
-            // }
-        }
 
         setComputerTurn(false);
 
@@ -1265,6 +1258,7 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
         calcGameState = []
 
     }
+
     function makeComputerMove() {
 
 
@@ -1272,6 +1266,7 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
         // do this for all possible moves and the choose the move with the highest evaluation
 
 
+        calcGameState = gameState.map(row => [...row]);
 
 
 
@@ -1362,6 +1357,8 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
         }
 
         setComputerTurn(false);
+        posEvaluations = {}
+        calcGameState = []
 
     }
 
@@ -1396,6 +1393,8 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
 
                 if (indexOfCurrentGameState !== allGameStates.length - 1) return;
 
+                calcGameState = gameState.map(row => [...row]);
+
                 const from = event.operation.source?.id;
                 if (typeof from !== "string") return;
 
@@ -1406,11 +1405,16 @@ const Board = forwardRef<BoardHandle, BoardProps>(({ setMovesPlayed, mode }, ref
                 const generalizedPiece = piece.slice(0, -2);
                 const color = piece.slice(-1)
                 if (mode === "Computer" && color !== myColor) return;
+
+
                 const calculatedValidMoves = calculateValidMoves(generalizedPiece, from, color);
                 calculateLegalMoves(piece, calculatedValidMoves, from)
             }}
             onDragEnd={(event) => {
+
                 if (event.canceled) return;
+
+                calcGameState = gameState.map(row => [...row]);
 
                 const from = event.operation.source?.id;
                 const to = event.operation.target?.id;
